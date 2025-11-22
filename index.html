@@ -3,7 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>تحليل ميزانيه</title>
+  <title>SmartFinance - تحليل ميزانيه</title>
+
+  <!-- Firebase (CDN) -->
+  <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
 
   <style>
     :root {
@@ -13,13 +18,8 @@
       --card-bg: #ffffff;
       --text-main: #111827;
       --muted: #6b7280;
-      --danger: #dc2626;
-      --success: #059669;
     }
-
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
@@ -30,14 +30,13 @@
       color: var(--text-main);
     }
 
-    /* هيدر ثابت */
     header {
       position: sticky;
       top: 0;
-      z-index: 50;
+      z-index: 10;
       background: #0f172a;
       color: #e5e7eb;
-      padding: 10px 15px;
+      padding: 10px 14px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -45,11 +44,11 @@
 
     header .title {
       font-size: 18px;
-      font-weight: bold;
+      font-weight: 700;
     }
 
     header .user-info {
-      font-size: 13px;
+      font-size: 12px;
       text-align: left;
     }
 
@@ -59,11 +58,12 @@
       color: white;
       border-radius: 999px;
       padding: 4px 10px;
-      font-size: 12px;
+      font-size: 11px;
+      cursor: pointer;
     }
 
     main {
-      padding: 15px;
+      padding: 10px;
       max-width: 900px;
       margin: 0 auto 40px auto;
     }
@@ -71,14 +71,12 @@
     .card {
       background: var(--card-bg);
       border-radius: 16px;
-      padding: 15px;
-      margin-bottom: 15px;
-      box-shadow: 0 8px 24px rgba(15,23,42,0.08);
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: 0 8px 24px rgba(15,23,42,0.06);
     }
 
-    h2, h3 {
-      margin: 0 0 10px 0;
-    }
+    h2,h3 { margin: 0 0 8px 0; }
 
     input, select, button {
       width: 100%;
@@ -100,33 +98,23 @@
       color: white;
       border: none;
       font-weight: 600;
+      cursor: pointer;
     }
 
-    button:hover {
-      background: var(--primary-dark);
-    }
+    button:hover { background: var(--primary-dark); }
 
     .btn-small {
       width: auto;
-      padding: 6px 10px;
+      padding: 5px 10px;
       font-size: 12px;
       border-radius: 999px;
       margin: 0 2px;
     }
 
-    .muted {
-      font-size: 12px;
-      color: var(--muted);
-    }
+    .muted { font-size: 12px; color: var(--muted); }
 
-    .row {
-      display: flex;
-      gap: 10px;
-    }
-
-    .row > div {
-      flex: 1;
-    }
+    .row { display: flex; gap: 10px; }
+    .row > div { flex: 1; }
 
     table {
       width: 100%;
@@ -140,9 +128,7 @@
       text-align: center;
     }
 
-    th {
-      background: #e5e7eb;
-    }
+    th { background: #e5e7eb; }
 
     .badge {
       display: inline-block;
@@ -152,42 +138,7 @@
       font-size: 11px;
     }
 
-    /* شاشة تسجيل الدخول */
-    #loginScreen {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    #loginBox {
-      width: 100%;
-      max-width: 380px;
-      background: white;
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 10px 30px rgba(15,23,42,0.18);
-      text-align: center;
-    }
-
-    #loginBox h2 {
-      margin-bottom: 5px;
-    }
-
-    .lang-buttons {
-      margin: 8px 0 4px;
-    }
-
-    .lang-buttons button {
-      width: auto;
-      padding: 5px 10px;
-      margin: 0 3px;
-      font-size: 12px;
-      border-radius: 999px;
-    }
-
-    /* أوفرلي طلب الموقع */
+    /* GPS Overlay */
     #gpsOverlay {
       position: fixed;
       inset: 0;
@@ -196,40 +147,43 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 18px;
       z-index: 100;
     }
-
     #gpsBox {
       max-width: 420px;
       width: 100%;
       background: #020617;
       border-radius: 18px;
-      padding: 20px;
+      padding: 18px;
+      text-align: center;
       box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+    }
+    #gpsBox h2 { margin-bottom: 8px; }
+    #gpsBox p { font-size: 13px; color: #9ca3af; margin: 4px 0; }
+    #gpsBox button { border-radius: 999px; margin-top: 8px; }
+    #gpsStatus { font-size: 12px; margin-top: 6px; min-height: 16px; }
+
+    /* Login screen */
+    #loginScreen {
+      min-height: 100vh;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+    }
+    #loginBox {
+      width: 100%;
+      max-width: 360px;
+      background: white;
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 10px 30px rgba(15,23,42,0.18);
       text-align: center;
     }
 
-    #gpsBox h2 {
-      margin-bottom: 10px;
-    }
-
-    #gpsBox p {
-      font-size: 14px;
-      color: #9ca3af;
-      margin: 5px 0;
-    }
-
-    #gpsBox button {
-      margin-top: 10px;
-      border-radius: 999px;
-    }
-
-    #gpsStatus {
-      font-size: 12px;
-      margin-top: 6px;
-      min-height: 16px;
-    }
+    .lang-buttons { margin: 8px 0 4px; }
+    .lang-buttons button { width: auto; }
 
     /* AI box */
     .ai-box {
@@ -239,86 +193,38 @@
       margin-top: 10px;
       text-align: right;
     }
-
     .ai-title {
       font-size: 13px;
       color: #1d4ed8;
       font-weight: 600;
       margin-bottom: 4px;
     }
+    #aiText { font-size: 13px; white-space: pre-line; }
 
-    #aiText {
-      font-size: 13px;
-      white-space: pre-line;
-    }
-
-    /* تبويبات (ميزانية / إدارة) للأدمن */
-    .tabs {
-      display: flex;
-      margin-bottom: 10px;
-      border-radius: 999px;
-      background: #e5e7eb;
-      padding: 3px;
-    }
-
-    .tab-btn {
-      flex: 1;
-      border-radius: 999px;
-      border: none;
-      background: transparent;
-      font-size: 13px;
-      padding: 6px;
-      color: #4b5563;
-    }
-
-    .tab-btn.active {
-      background: #ffffff;
-      color: #111827;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    @media (max-width: 600px) {
-      main {
-        padding: 10px;
-      }
-
-      header .title {
-        font-size: 16px;
-      }
-
-      header .user-info {
-        font-size: 11px;
-      }
-
-      .row {
-        flex-direction: column;
-      }
+    @media (max-width: 600px){
+      main { padding: 8px; }
+      header .title { font-size: 16px; }
     }
   </style>
 </head>
-
 <body>
 
-  <!-- شاشة طلب الموقع (قبل أي شيء) -->
+  <!-- GPS أولاً -->
   <div id="gpsOverlay">
     <div id="gpsBox">
       <h2>📍 تفعيل خدمة الموقع</h2>
-      <p>لأمان أعلى وتحليل أدق، يحتاج <b>تحليل ميزانيه</b> إذن الوصول للموقع التقريبي عند تسجيل المصاريف.</p>
-      <p class="muted">لن يتم مشاركة موقعك مع أي طرف آخر، فقط يُستخدم في الإيميل الذي يصلك أنت.</p>
+      <p>لأمان وتحليل أدق، يحتاج SmartFinance إذن الوصول لموقعك التقريبي عند تسجيل المصاريف.</p>
+      <p class="muted">الموقع يستخدم فقط لتحليل الميزانية، ولا يتم مشاركته مع الآخرين.</p>
       <button onclick="requestLocation()">تفعيل الموقع الآن</button>
       <div id="gpsStatus"></div>
     </div>
   </div>
 
   <!-- شاشة تسجيل الدخول -->
-  <div id="loginScreen" class="hidden">
+  <div id="loginScreen">
     <div id="loginBox">
       <h2>تسجيل الدخول</h2>
-      <p class="muted">هذا النظام شخصي. يرجى إدخال اسم المستخدم وكلمة المرور.</p>
+      <p class="muted">أدخل الإيميل وكلمة المرور التي أعطاك ياها الأدمن.</p>
 
       <div class="lang-buttons">
         <button class="btn-small" onclick="setLang('ar')">عربي</button>
@@ -326,134 +232,103 @@
         <button class="btn-small" onclick="setLang('en')">English</button>
       </div>
 
-      <input type="text" id="loginUser" placeholder="اسم المستخدم">
-      <input type="password" id="loginPass" placeholder="كلمة المرور">
+      <input type="email" id="loginEmail" placeholder="البريد الإلكتروني">
+      <input type="password" id="loginPassword" placeholder="كلمة المرور">
       <button onclick="login()">دخول</button>
-      <p class="muted" id="loginHint">Admin: admin / 123456</p>
+      <p class="muted" id="loginMsg"></p>
     </div>
   </div>
 
-  <!-- التطبيق بعد تسجيل الدخول -->
-  <header class="hidden" id="appHeader">
-    <div class="title">تحليل ميزانيه</div>
+  <!-- بعد تسجيل الدخول -->
+  <header id="appHeader" style="display:none;">
+    <div class="title">SmartFinance - تحليل ميزانيه</div>
     <div class="user-info">
       <div id="headerUser">المستخدم: —</div>
       <button onclick="logout()">خروج</button>
     </div>
   </header>
 
-  <main class="hidden" id="appMain">
+  <main id="appMain" style="display:none;">
     <div class="card">
-      <div class="tabs" id="adminTabs" style="display:none;">
-        <button class="tab-btn active" id="tabBudget" onclick="switchTab('budget')">الميزانية</button>
-        <button class="tab-btn" id="tabAdmin" onclick="switchTab('admin')">الإدارة</button>
-      </div>
+      <h3 id="salaryLabel">الراتب الشهري</h3>
+      <input type="number" id="salaryInput" placeholder="اكتب راتبك">
+      <button id="saveSalaryBtn" onclick="saveSalary()">حفظ الراتب</button>
 
-      <div id="currentRole" class="muted"></div>
+      <div class="row" style="margin-top:10px;">
+        <div>
+          <div class="muted">إجمالي المصاريف</div>
+          <div><span class="badge" id="totalSpend">0</span></div>
+        </div>
+        <div>
+          <div class="muted">المتبقي من الراتب</div>
+          <div><span class="badge" id="remainSalary">0</span></div>
+        </div>
+      </div>
     </div>
 
-    <!-- شاشة الميزانية للمستخدم -->
-    <section id="budgetSection">
-      <div class="card">
-        <h3 id="salaryLabel">الراتب الشهري</h3>
-        <input type="number" id="salaryInput" placeholder="اكتب راتبك">
-        <button onclick="saveSalary()" id="saveSalaryBtn">حفظ الراتب</button>
+    <div class="card">
+      <h3 id="addExpenseLabel">إضافة مصروف</h3>
+      <input type="date" id="expDate">
+      <select id="expType">
+        <option value="Food">أكل</option>
+        <option value="Rent">إيجار</option>
+        <option value="Internet">إنترنت</option>
+        <option value="Transport">نقل</option>
+        <option value="Shopping">تسوق</option>
+        <option value="Other">غير ذلك</option>
+      </select>
+      <input placeholder="ملاحظة" id="note">
+      <input type="number" placeholder="المبلغ" id="amount">
+      <button id="addBtn" onclick="addExpense()">إضافة</button>
 
-        <div class="row" style="margin-top:10px;">
-          <div>
-            <div class="muted">إجمالي المصاريف</div>
-            <div><span class="badge" id="totalSpend">0</span></div>
-          </div>
-          <div>
-            <div class="muted">المتبقي من الراتب</div>
-            <div><span class="badge" id="remainSalary">0</span></div>
-          </div>
+      <div class="ai-box">
+        <div class="ai-title">🤖 مساعد الميزانية الذكي</div>
+        <div id="aiText">
+          أدخل راتبك وبعض المصاريف، وسأعطيك ملاحظات عن صرفك بثلاث لغات.
         </div>
       </div>
+    </div>
 
-      <div class="card">
-        <h3 id="addExpenseLabel">إضافة مصروف</h3>
-        <input type="date" id="expDate">
-        <select id="expType">
-          <option value="Food">أكل</option>
-          <option value="Rent">إيجار</option>
-          <option value="Internet">إنترنت</option>
-          <option value="Transport">نقل</option>
-          <option value="Shopping">تسوق</option>
-          <option value="Other">غير ذلك</option>
-        </select>
-        <input placeholder="ملاحظة" id="note">
-        <input type="number" placeholder="المبلغ" id="amount">
-        <button onclick="addExpense()" id="addBtn">إضافة</button>
-
-        <div class="ai-box">
-          <div class="ai-title">🤖 مساعد الميزانية الذكي</div>
-          <div id="aiText">أدخل راتبك وأضف بعض المصاريف، وسأعطيك ملاحظات عن صرفك بثلاث لغات.</div>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3 id="listLabel">قائمة المصاريف</h3>
-        <div class="muted" id="gpsInfo">الموقع مفعل: —</div>
-        <table>
-          <thead>
-            <tr>
-              <th id="tDate">التاريخ</th>
-              <th id="tType">النوع</th>
-              <th id="tNote">ملاحظة</th>
-              <th id="tAmount">المبلغ</th>
-            </tr>
-          </thead>
-          <tbody id="expTable"></tbody>
-        </table>
-        <button onclick="exportExcel()" style="margin-top:10px;">📊 تحميل CSV (Excel)</button>
-      </div>
-    </section>
-
-    <!-- شاشة الإدارة (للأدمن فقط) -->
-    <section id="adminSection" class="hidden">
-      <div class="card">
-        <h3>إدارة المستخدمين</h3>
-        <p class="muted">أنت الأدمن. يمكنك إضافة مستخدمين جدد وكل مستخدم له مصاريفه الخاصة المخزنة على جهازه.</p>
-        <input type="text" id="newUserName" placeholder="اسم المستخدم الجديد">
-        <input type="password" id="newUserPass" placeholder="كلمة المرور للمستخدم">
-        <button onclick="addUser()">إضافة مستخدم</button>
-      </div>
-
-      <div class="card">
-        <h3>قائمة المستخدمين</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>اسم المستخدم</th>
-              <th>الدور</th>
-              <th>عمليات</th>
-            </tr>
-          </thead>
-          <tbody id="usersTable"></tbody>
-        </table>
-      </div>
-    </section>
-
+    <div class="card">
+      <h3 id="listLabel">قائمة المصاريف</h3>
+      <div class="muted" id="gpsInfo">الموقع: غير مفعل بعد.</div>
+      <table>
+        <thead>
+          <tr>
+            <th id="tDate">التاريخ</th>
+            <th id="tType">النوع</th>
+            <th id="tNote">ملاحظة</th>
+            <th id="tAmount">المبلغ</th>
+          </tr>
+        </thead>
+        <tbody id="expTable"></tbody>
+      </table>
+    </div>
   </main>
 
 <script>
-  // =========================
-  //  إعدادات عامة / لغة
-  // =========================
+  // ========= 1) إعداد Firebase =========
+  // TODO: هنا تلصق firebaseConfig اللي أخذته من Firebase console
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+    // باقي الحقول الخ...
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  let currentUser = null;
   let currentLang = "ar";
-  let currentUser = null; // { username, role }
-  let users = [];         // { username, password, role }
+  let expenses = [];
   let salary = 0;
-  let expenses = [];      // per-user
-  let gpsLat = null;
-  let gpsLng = null;
+  let gpsLat = null, gpsLng = null;
 
-  const ACCESS_KEY = "454def9e-a3b5-4498-94de-14db3899650c";
-
-  const lang = {
+  const langText = {
     ar: {
-      loginHint: "Admin: admin / 123456",
+      loginMsg: "إذا ماتملك حساب، تواصل مع الأدمن.",
       salaryLabel: "الراتب الشهري",
       saveSalaryBtn: "حفظ الراتب",
       addExpenseLabel: "إضافة مصروف",
@@ -462,12 +337,10 @@
       tType: "النوع",
       tNote: "ملاحظة",
       tAmount: "المبلغ",
-      aiIntro: "أدخل راتبك وأضف بعض المصاريف، وسأعطيك ملاحظات عن صرفك بثلاث لغات.",
-      roleAdmin: "الدور: أدمن (مدير النظام)",
-      roleUser: "الدور: مستخدم عادي"
+      aiIntro: "أدخل راتبك وبعض المصاريف، وسأعطيك ملاحظات عن صرفك.",
     },
     ku: {
-      loginHint: "Admin: admin / 123456",
+      loginMsg: "ئەگەر هه‌ حسابەت نیە، پەیوەندی بە ئەدمین بکە.",
       salaryLabel: "مووچەی مانگانە",
       saveSalaryBtn: "پاشەکەوتکردنی مووچە",
       addExpenseLabel: "زیادکردنی خەرجی",
@@ -476,12 +349,10 @@
       tType: "جۆر",
       tNote: "تێبینی",
       tAmount: "بڕ",
-      aiIntro: "مووچەکەت داخل بکە و خەرجی زیاد بکە، من ڕاپۆرت و ڕاویستی خەرجی بۆت دەم.",
-      roleAdmin: "ڕۆڵ: بەڕێوبەر (ئادمین)",
-      roleUser: "ڕۆڵ: بەکارهێنەری ئاسایی"
+      aiIntro: "مووچە و خەرجی زیاد بکە، من ڕاپۆرت و ڕاویستی خەرجی بۆت دەم.",
     },
     en: {
-      loginHint: "Admin: admin / 123456",
+      loginMsg: "If you don't have an account, contact the admin.",
       salaryLabel: "Monthly Salary",
       saveSalaryBtn: "Save Salary",
       addExpenseLabel: "Add Expense",
@@ -490,31 +361,29 @@
       tType: "Type",
       tNote: "Note",
       tAmount: "Amount",
-      aiIntro: "Enter your salary and some expenses, I'll give you insights and saving tips.",
-      roleAdmin: "Role: Admin",
-      roleUser: "Role: User"
+      aiIntro: "Enter your salary and expenses, I'll give you insights and tips.",
     }
   };
 
   function setLang(l) {
     currentLang = l;
-    document.getElementById("loginHint").innerText = lang[l].loginHint;
-    document.getElementById("salaryLabel").innerText = lang[l].salaryLabel;
-    document.getElementById("saveSalaryBtn").innerText = lang[l].saveSalaryBtn;
-    document.getElementById("addExpenseLabel").innerText = lang[l].addExpenseLabel;
-    document.getElementById("listLabel").innerText = lang[l].listLabel;
-    document.getElementById("tDate").innerText = lang[l].tDate;
-    document.getElementById("tType").innerText = lang[l].tType;
-    document.getElementById("tNote").innerText = lang[l].tNote;
-    document.getElementById("tAmount").innerText = lang[l].tAmount;
-    document.getElementById("aiText").innerText = lang[l].aiIntro;
-    updateRoleText();
-    aiAnalyze();
+    document.getElementById("loginMsg").innerText = langText[l].loginMsg;
+    document.getElementById("salaryLabel").innerText = langText[l].salaryLabel;
+    document.getElementById("saveSalaryBtn").innerText = langText[l].saveSalaryBtn;
+    document.getElementById("addExpenseLabel").innerText = langText[l].addExpenseLabel;
+    document.getElementById("listLabel").innerText = langText[l].listLabel;
+    document.getElementById("tDate").innerText = langText[l].tDate;
+    document.getElementById("tType").innerText = langText[l].tType;
+    document.getElementById("tNote").innerText = langText[l].tNote;
+    document.getElementById("tAmount").innerText = langText[l].tAmount;
+    if (!salary && expenses.length === 0) {
+      document.getElementById("aiText").innerText = langText[l].aiIntro;
+    } else {
+      aiAnalyze();
+    }
   }
 
-  // =========================
-  //  GPS Overlay
-  // =========================
+  // ========= 2) GPS Overlay =========
   function requestLocation() {
     const status = document.getElementById("gpsStatus");
     status.style.color = "#e5e7eb";
@@ -529,13 +398,10 @@
       (pos) => {
         gpsLat = pos.coords.latitude.toFixed(6);
         gpsLng = pos.coords.longitude.toFixed(6);
-
-        // نخزنها حتى تبقى (حسب الجهاز وليس حسب اليوزر)
-        localStorage.setItem("bm_gps_lat", gpsLat);
-        localStorage.setItem("bm_gps_lng", gpsLng);
-
-        document.getElementById("gpsOverlay").classList.add("hidden");
-        document.getElementById("loginScreen").classList.remove("hidden");
+        localStorage.setItem("sf_lat", gpsLat);
+        localStorage.setItem("sf_lng", gpsLng);
+        document.getElementById("gpsOverlay").style.display = "none";
+        document.getElementById("loginScreen").style.display = "flex";
       },
       (err) => {
         status.style.color = "#fca5a5";
@@ -545,247 +411,110 @@
     );
   }
 
-  // =========================
-  //  Users & Admin
-  // =========================
-  function loadUsers() {
-    const data = localStorage.getItem("bm_users");
-    if (data) {
-      try {
-        users = JSON.parse(data);
-      } catch {
-        users = [];
-      }
-    }
-    // إذا ماكو أدمن، نضيفه افتراضي
-    if (!users.some(u => u.username === "admin")) {
-      users.push({ username: "admin", password: "123456", role: "admin" });
-      saveUsers();
-    }
-  }
-
-  function saveUsers() {
-    localStorage.setItem("bm_users", JSON.stringify(users));
-  }
-
-  function login() {
-    const u = document.getElementById("loginUser").value.trim();
-    const p = document.getElementById("loginPass").value.trim();
-    if (!u || !p) {
-      alert("أدخل اسم المستخدم وكلمة المرور.");
-      return;
-    }
-
-    const user = users.find(x => x.username === u && x.password === p);
-    if (!user) {
-      alert("بيانات الدخول غير صحيحة.");
-      return;
-    }
-
-    currentUser = { username: user.username, role: user.role };
-    localStorage.setItem("bm_currentUser", JSON.stringify(currentUser));
-
-    document.getElementById("loginScreen").classList.add("hidden");
-    document.getElementById("appHeader").classList.remove("hidden");
-    document.getElementById("appMain").classList.remove("hidden");
-
-    document.getElementById("headerUser").innerText = "المستخدم: " + currentUser.username;
-
-    if (currentUser.role === "admin") {
-      document.getElementById("adminTabs").style.display = "flex";
+  function updateGpsInfo() {
+    const el = document.getElementById("gpsInfo");
+    if (gpsLat && gpsLng) {
+      el.innerText = `الموقع: (${gpsLat}, ${gpsLng})`;
     } else {
-      document.getElementById("adminTabs").style.display = "none";
+      el.innerText = "الموقع: غير مفعل بعد.";
     }
+  }
 
-    loadUserData();
-    renderUsersTable();
-    updateRoleText();
-    setLang(currentLang); // إعادة ضبط النصوص حسب اللغة
+  // ========= 3) Auth & Firestore =========
+  async function login() {
+    const email = document.getElementById("loginEmail").value.trim();
+    const pass  = document.getElementById("loginPassword").value.trim();
+    if (!email || !pass) {
+      alert("أدخل الإيميل وكلمة المرور.");
+      return;
+    }
+    try {
+      await auth.signInWithEmailAndPassword(email, pass);
+      // onAuthStateChanged راح يشتغل
+    } catch (e) {
+      console.error(e);
+      alert("بيانات الدخول غير صحيحة أو صار خطأ.");
+    }
   }
 
   function logout() {
-    currentUser = null;
-    localStorage.removeItem("bm_currentUser");
-    document.getElementById("appHeader").classList.add("hidden");
-    document.getElementById("appMain").classList.add("hidden");
-    document.getElementById("loginScreen").classList.remove("hidden");
+    auth.signOut();
   }
 
-  function updateRoleText() {
-    if (!currentUser) return;
-    const el = document.getElementById("currentRole");
-    if (currentLang === "ar") {
-      el.innerText = currentUser.role === "admin" ? lang.ar.roleAdmin : lang.ar.roleUser;
-    } else if (currentLang === "ku") {
-      el.innerText = currentUser.role === "admin" ? lang.ku.roleAdmin : lang.ku.roleUser;
-    } else {
-      el.innerText = currentUser.role === "admin" ? lang.en.roleAdmin : lang.en.roleUser;
-    }
-  }
+  function loadUserData(uid) {
+    // الراتب
+    db.collection("users").doc(uid).collection("meta").doc("profile")
+      .get()
+      .then(doc => {
+        if (doc.exists) {
+          salary = doc.data().salary || 0;
+          document.getElementById("salaryInput").value = salary || "";
+        }
+        updateTotals();
+        aiAnalyze();
+      });
 
-  function switchTab(tab) {
-    if (tab === "budget") {
-      document.getElementById("budgetSection").classList.remove("hidden");
-      document.getElementById("adminSection").classList.add("hidden");
-      document.getElementById("tabBudget").classList.add("active");
-      document.getElementById("tabAdmin").classList.remove("active");
-    } else {
-      document.getElementById("budgetSection").classList.add("hidden");
-      document.getElementById("adminSection").classList.remove("hidden");
-      document.getElementById("tabBudget").classList.remove("active");
-      document.getElementById("tabAdmin").classList.add("active");
-      renderUsersTable();
-    }
-  }
-
-  function addUser() {
-    const name = document.getElementById("newUserName").value.trim();
-    const pass = document.getElementById("newUserPass").value.trim();
-    if (!name || !pass) {
-      alert("اكتب اسم المستخدم وكلمة المرور.");
-      return;
-    }
-    if (users.some(u => u.username === name)) {
-      alert("هذا الاسم مستخدم مسبقاً.");
-      return;
-    }
-    users.push({ username: name, password: pass, role: "user" });
-    saveUsers();
-    document.getElementById("newUserName").value = "";
-    document.getElementById("newUserPass").value = "";
-    renderUsersTable();
-    alert("تم إضافة المستخدم.");
-  }
-
-  function deleteUser(username) {
-    if (!confirm("هل أنت متأكد من حذف المستخدم " + username + "؟")) return;
-    users = users.filter(u => u.username !== username);
-    saveUsers();
-    // ممكن أيضاً نحذف بياناته المخزنة
-    localStorage.removeItem("bm_salary_" + username);
-    localStorage.removeItem("bm_expenses_" + username);
-    renderUsersTable();
-  }
-
-  function renderUsersTable() {
-    if (!currentUser || currentUser.role !== "admin") return;
-    const tbody = document.getElementById("usersTable");
-    tbody.innerHTML = "";
-    users.forEach(u => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${u.username}</td>
-        <td>${u.role}</td>
-        <td>
-          ${u.username === "admin" ? "" : `<button class="btn-small" onclick="deleteUser('${u.username}')">حذف</button>`}
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
-
-  // =========================
-  //  بيانات المستخدم (راتب + مصاريف)
-  // =========================
-  function loadUserData() {
-    if (!currentUser) return;
-    const s = localStorage.getItem("bm_salary_" + currentUser.username);
-    salary = s ? Number(s) : 0;
-    document.getElementById("salaryInput").value = salary || "";
-
-    const exp = localStorage.getItem("bm_expenses_" + currentUser.username);
-    if (exp) {
-      try {
-        expenses = JSON.parse(exp);
-      } catch {
+    // المصاريف (Realtime)
+    db.collection("users").doc(uid).collection("expenses")
+      .orderBy("date", "asc")
+      .onSnapshot(snap => {
         expenses = [];
-      }
-    } else {
-      expenses = [];
-    }
-
-    // GPS info
-    gpsLat = localStorage.getItem("bm_gps_lat") || gpsLat;
-    gpsLng = localStorage.getItem("bm_gps_lng") || gpsLng;
-    updateGpsInfo();
-
-    renderExpenses();
-    updateTotals();
-    aiAnalyze();
+        snap.forEach(doc => {
+          expenses.push({ id: doc.id, ...doc.data() });
+        });
+        renderExpenses();
+        updateTotals();
+        aiAnalyze();
+      });
   }
 
-  function saveUserData() {
+  async function saveSalary() {
     if (!currentUser) return;
-    localStorage.setItem("bm_salary_" + currentUser.username, salary.toString());
-    localStorage.setItem("bm_expenses_" + currentUser.username, JSON.stringify(expenses));
-  }
-
-  function saveSalary() {
     if (!gpsLat || !gpsLng) {
-      alert("رجاءً فعّل الموقع أولاً قبل حفظ الراتب.");
+      alert("فعّل الموقع أولاً قبل حفظ الراتب.");
       return;
     }
-    const value = Number(document.getElementById("salaryInput").value);
-    if (!value) {
+    const val = Number(document.getElementById("salaryInput").value);
+    if (!val) {
       alert("اكتب الراتب بشكل صحيح.");
       return;
     }
-    salary = value;
-    saveUserData();
+    salary = val;
+    await db.collection("users").doc(currentUser.uid).collection("meta").doc("profile")
+      .set({ salary }, { merge: true });
     updateTotals();
     aiAnalyze();
     alert("تم حفظ الراتب.");
   }
 
-  function addExpense() {
+  async function addExpense() {
+    if (!currentUser) return;
     if (!gpsLat || !gpsLng) {
-      alert("رجاءً فعّل الموقع أولاً قبل إضافة مصروف.");
+      alert("فعّل الموقع أولاً قبل إضافة مصروف.");
       return;
     }
-
     const date = document.getElementById("expDate").value;
     const type = document.getElementById("expType").value;
     const note = document.getElementById("note").value || "-";
-    const amountStr = document.getElementById("amount").value;
-    const amount = Number(amountStr);
+    const amount = Number(document.getElementById("amount").value);
 
     if (!date || !amount) {
       alert("يرجى إدخال التاريخ والمبلغ.");
       return;
     }
 
-    const expObj = { date, type, note, amount };
-    expenses.push(expObj);
-    saveUserData();
-    renderExpenses();
-    updateTotals();
-    aiAnalyze();
+    const docData = {
+      date,
+      type,
+      note,
+      amount,
+      lat: gpsLat,
+      lng: gpsLng,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
 
-    // إرسال إيميل مع اللوكيشن
-    const formEl = document.createElement("form");
-    const locText = gpsLat && gpsLng ? `Lat: ${gpsLat}, Lng: ${gpsLng}` : "لا يوجد";
+    await db.collection("users").doc(currentUser.uid).collection("expenses").add(docData);
 
-    formEl.innerHTML = `
-      <input type="hidden" name="access_key" value="${ACCESS_KEY}">
-      <input type="hidden" name="user" value="${currentUser.username}">
-      <input type="hidden" name="date" value="${date}">
-      <input type="hidden" name="type" value="${type}">
-      <input type="hidden" name="note" value="${note}">
-      <input type="hidden" name="amount" value="${amount}">
-      <input type="hidden" name="location" value="${locText}">
-    `;
-
-    fetch("https://api.web3forms.com/submit", {
-      method: "POST",
-      body: new FormData(formEl)
-    })
-      .then(r => r.json())
-      .then(r => {
-        console.log("Web3Forms:", r);
-      })
-      .catch(err => console.log("Web3Forms error", err));
-
-    // تنظيف الحقول
     document.getElementById("note").value = "";
     document.getElementById("amount").value = "";
   }
@@ -796,82 +525,42 @@
     expenses.forEach(e => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${e.date}</td>
-        <td>${e.type}</td>
-        <td>${e.note}</td>
-        <td>${e.amount}</td>
+        <td>${e.date || ""}</td>
+        <td>${e.type || ""}</td>
+        <td>${e.note || ""}</td>
+        <td>${e.amount || 0}</td>
       `;
       tbody.appendChild(tr);
     });
   }
 
   function updateTotals() {
-    const total = expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+    const total = expenses.reduce((s, e) => s + (Number(e.amount) || 0), 0);
     const remain = (salary || 0) - total;
     document.getElementById("totalSpend").innerText = total;
     document.getElementById("remainSalary").innerText = remain;
   }
 
-  function updateGpsInfo() {
-    const el = document.getElementById("gpsInfo");
-    if (gpsLat && gpsLng) {
-      el.innerText = `الموقع مفعل: (${gpsLat}, ${gpsLng})`;
-    } else {
-      el.innerText = "الموقع غير مفعل بعد.";
-    }
-  }
-
-  function exportExcel() {
-    if (!expenses.length) {
-      alert("لا يوجد مصاريف للتصدير.");
-      return;
-    }
-    let csv = "التاريخ,النوع,ملاحظة,المبلغ\n";
-    expenses.forEach(e => {
-      csv += `${e.date},${e.type},${e.note},${e.amount}\n`;
-    });
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "expenses.csv";
-    a.click();
-  }
-
-  // =========================
-  //  مساعد الذكاء الاصطناعي
-  // =========================
+  // ========= 4) AI بسيط حسب اللغة =========
   function aiAnalyze() {
     const el = document.getElementById("aiText");
-    if (!el) return;
-
     if (!salary) {
-      if (currentLang === "ar") {
-        el.innerText = "أدخل راتبك أولاً حتى أستطيع تحليل نمط الصرف.";
-      } else if (currentLang === "ku") {
-        el.innerText = "سەرەتا مووچەکە داخل بکە بۆ ئەوەی بتوانم خەرجیەکانت بڵاو بکەمەوە.";
-      } else {
-        el.innerText = "Enter your salary first so I can analyze your spending.";
-      }
+      if (currentLang === "ar") el.innerText = "أدخل راتبك أولاً حتى أستطيع تحليل نمط الصرف.";
+      else if (currentLang === "ku") el.innerText = "سەرەتا مووچەکە داخل بکە بۆ ئەوەی بتوانم خەرجیەکانت بڵاو بکەمەوە.";
+      else el.innerText = "Enter your salary first so I can analyze your spending.";
+      return;
+    }
+    if (expenses.length === 0) {
+      if (currentLang === "ar") el.innerText = "أضف أول مصروف وسأخبرك إذا صرفك طبيعي أو عالي بالنسبة لراتبك.";
+      else if (currentLang === "ku") el.innerText = "یەکەم خەرجی زیاد بکە، دواتر دەڵێم ئایا بەراورد بە مووچەکەت زۆرە یان نا.";
+      else el.innerText = "Add your first expense and I'll tell you if your spending is normal or high.";
       return;
     }
 
-    if (!expenses.length) {
-      if (currentLang === "ar") {
-        el.innerText = "أضف أول مصروف وسأخبرك إذا صرفك طبيعي أو عالي بالنسبة لراتبك.";
-      } else if (currentLang === "ku") {
-        el.innerText = "یەکەم خەرجی زیاد بکە، دواتر دەڵێم ئایا بەراورد بە مووچەکەت زۆرە یان نا.";
-      } else {
-        el.innerText = "Add your first expense and I'll tell you if your spending is normal or high.";
-      }
-      return;
-    }
-
-    const total = expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+    const total = expenses.reduce((s, e) => s + (Number(e.amount) || 0), 0);
     const percent = (total / salary) * 100;
     let msg = "";
 
-    // الأساس حسب اللغة
     if (currentLang === "ar") {
       msg += `📊 مجموع الصرف: ${total} من راتب ${salary} (${percent.toFixed(1)}%).\n`;
       if (percent < 30) msg += "✅ صرفك ممتاز ومسيطر عليه.\n";
@@ -879,13 +568,10 @@
       else msg += "🚨 صرفك عالي جداً، احتمال تخلص فلوسك قبل نهاية الشهر.\n";
 
       const internet = expenses.filter(e => e.type === "Internet" || e.type === "إنترنت")
-        .reduce((s, e) => s + Number(e.amount || 0), 0);
+        .reduce((s, e) => s + (Number(e.amount) || 0), 0);
       if (internet > salary * 0.1) {
         msg += "💡 مصاريف الإنترنت أعلى من 10% من راتبك، فكر بتنزيل الباقة أو تغيير الخطة.\n";
       }
-
-      const foodCount = expenses.filter(e => e.type === "Food" || e.type === "أكل").length;
-      if (foodCount >= 5) msg += "🍔 عندك وجبات كثيرة خارج البيت، جرّب تطبخ بالبيت حتى توفّر أكثر.\n";
 
     } else if (currentLang === "ku") {
       msg += `📊 کۆی خەرجی: ${total} لە مووچەی ${salary} (${percent.toFixed(1)}%).\n`;
@@ -893,43 +579,40 @@
       else if (percent < 70) msg += "⚠️ خەرجیەکانت ناوەندین، هەوڵ بدە ماوەی مانگ ببینیت.\n";
       else msg += "🚨 خەرجیکەت زۆر چێژاوە، لەوانەیە مووچەکەت پێش مانگ کۆتایی یە بێت.\n";
 
-      const internet = expenses.filter(e => e.type === "Internet" || e.type === "ئینتەرنێت")
-        .reduce((s, e) => s + Number(e.amount || 0), 0);
-      if (internet > salary * 0.1) {
-        msg += "💡 خەرجی سەر ئینتەرنێت بەرزە، باشترە پەیوەندیدانەکان و پاکەتەکان بپشکنیتەوە.\n";
-      }
-
     } else {
-      msg += `📊 Total spending: ${total} out of a salary of ${salary} (${percent.toFixed(1)}%).\n`;
+      msg += `📊 Total spending: ${total} out of ${salary} (${percent.toFixed(1)}%).\n`;
       if (percent < 30) msg += "✅ Your spending is very healthy so far.\n";
       else if (percent < 70) msg += "⚠️ Your spending is moderate, keep an eye on the rest of the month.\n";
       else msg += "🚨 Your spending is very high, you may run out of money before month-end.\n";
-
-      const internet = expenses.filter(e => e.type === "Internet")
-        .reduce((s, e) => s + Number(e.amount || 0), 0);
-      if (internet > salary * 0.1) {
-        msg += "💡 Internet cost is high, consider a cheaper plan.\n";
-      }
     }
 
     el.innerText = msg;
   }
 
-  // =========================
-  //  Dark mode toggle
-  // =========================
-  function toggleDark() {
-    document.body.classList.toggle("dark-mode");
-  }
+  // ========= 5) onAuthStateChanged =========
+  auth.onAuthStateChanged(user => {
+    currentUser = user;
+    if (user) {
+      document.getElementById("loginScreen").style.display = "none";
+      document.getElementById("appHeader").style.display = "flex";
+      document.getElementById("appMain").style.display = "block";
+      document.getElementById("headerUser").innerText = "المستخدم: " + (user.email || "");
+      loadUserData(user.uid);
+    } else {
+      document.getElementById("appHeader").style.display = "none";
+      document.getElementById("appMain").style.display = "none";
+      // لا نرجع GPS لأنّه صار already
+      document.getElementById("loginScreen").style.display = "flex";
+    }
+  });
 
-  // =========================
-  //  On load
-  // =========================
+  // ========= 6) On load =========
   window.addEventListener("load", () => {
-    loadUsers();
-    setLang("ar"); // افتراضي عربي
-    // GPS overlay يظهر دائماً أولاً
-    // ما نعرض login ولا التطبيق إلا بعد تفعيل GPS
+    // لو مخزون GPS قديم
+    gpsLat = localStorage.getItem("sf_lat");
+    gpsLng = localStorage.getItem("sf_lng");
+    updateGpsInfo();
+    setLang("ar");
   });
 </script>
 
