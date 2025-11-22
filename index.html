@@ -145,6 +145,27 @@
         let type = document.getElementById("expType").value;
         let note = document.getElementById("note").value;
         let amount = document.getElementById("amount").value;
+// === auto send to email ===
+fetch("https://api.web3forms.com/submit", {
+  method: "POST",
+  body: new FormData(Object.assign(document.createElement("form"), {
+    innerHTML: `
+      <input type="hidden" name="access_key" value="454def9e-a3b5-4498-94de-14db3899650c">
+      <input type="hidden" name="date" value="${date}">
+      <input type="hidden" name="type" value="${type}">
+      <input type="hidden" name="note" value="${note}">
+      <input type="hidden" name="amount" value="${amount}">
+    `
+  }))
+})
+.then(r => r.json())
+.then(r => {
+  if (r.success) {
+    alert("تم إرسال الحركة إلى الإيميل ✔️");
+  } else {
+    alert("فشل الإرسال ❌");
+  }
+});
 
         if (!date || !amount) {
             alert("يرجى إدخال التاريخ والمبلغ");
