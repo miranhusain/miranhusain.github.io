@@ -248,6 +248,26 @@
         document.getElementById("tAmount").innerText = lang[l].tAmount;
     }
 </script>
+<!-- Web3Forms Submit Section -->
+<form action="https://api.web3forms.com/submit" method="POST" style="margin-top:20px; background:white; padding:15px; border-radius:10px;">
+    <input type="hidden" name="access_key" value="454def9e-a3b5-4498-94de-14db3899650c">
+
+    <h3 style="margin-bottom:10px;">Send Expense to Admin</h3>
+
+    <label>Type</label>
+    <input type="text" name="type" id="formType" required>
+
+    <label>Note</label>
+    <input type="text" name="note" id="formNote" required>
+
+    <label>Amount</label>
+    <input type="number" name="amount" id="formAmount" required>
+
+    <label>Date</label>
+    <input type="date" name="date" id="formDate" required>
+
+    <button type="submit" style="margin-top:10px;">Send</button>
+</form>
 
 </body>
 </html>
