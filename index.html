@@ -60,12 +60,43 @@
             margin: 5px;
         }
 
+        .stats {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
+
+        .stat-box {
+            flex: 1;
+            padding: 10px;
+            border-radius: 10px;
+            background: #f7f1ff;
+            border: 1px solid #d6c7ff;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
         .dark-mode {
             background: #121212 !important;
             color: white !important;
         }
 
-        .dark-mode input, 
+        .dark-mode .container {
+            background: #1c1c1c;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.6);
+        }
+
+        .dark-mode input,
         .dark-mode select {
             background: #1f1f1f;
             color: white;
@@ -74,6 +105,11 @@
 
         .dark-mode table {
             color: white;
+        }
+
+        .dark-mode .stat-box {
+            background: #221133;
+            border-color: #6a0dad;
         }
     </style>
 </head>
@@ -93,6 +129,18 @@
         <input type="number" id="salary" placeholder="اكتب راتبك">
 
         <button onclick="saveSalary()" id="saveSalaryBtn">حفظ</button>
+
+        <!-- إحصائيات الراتب -->
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-label" id="totalLabel">إجمالي المصاريف</div>
+                <div class="stat-value" id="totalValue">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label" id="remainLabel">المتبقي من الراتب</div>
+                <div class="stat-value" id="remainValue">0</div>
+            </div>
+        </div>
 
         <hr>
 
@@ -135,8 +183,40 @@
     let expenses = [];
     let salary = 0;
 
+    // تحميل البيانات القديمة من المتصفح
+    document.addEventListener("DOMContentLoaded", () => {
+        const savedSalary = localStorage.getItem("sb_salary");
+        const savedExpenses = localStorage.getItem("sb_expenses");
+
+        if (savedSalary) {
+            salary = Number(savedSalary) || 0;
+            document.getElementById("salary").value = salary;
+        }
+
+        if (savedExpenses) {
+            try {
+                expenses = JSON.parse(savedExpenses) || [];
+            } catch (e) {
+                expenses = [];
+            }
+        }
+
+        updateTable();
+        updateStats();
+
+        // اللغة الافتراضية عربي
+        setLang('ar');
+    });
+
+    function saveToStorage() {
+        localStorage.setItem("sb_salary", salary);
+        localStorage.setItem("sb_expenses", JSON.stringify(expenses));
+    }
+
     function saveSalary() {
-        salary = document.getElementById("salary").value;
+        salary = Number(document.getElementById("salary").value) || 0;
+        saveToStorage();
+        updateStats();
         alert("تم حفظ الراتب: " + salary);
     }
 
@@ -145,36 +225,49 @@
         let type = document.getElementById("expType").value;
         let note = document.getElementById("note").value;
         let amount = document.getElementById("amount").value;
-// === auto send to email ===
-fetch("https://api.web3forms.com/submit", {
-  method: "POST",
-  body: new FormData(Object.assign(document.createElement("form"), {
-    innerHTML: `
-      <input type="hidden" name="access_key" value="454def9e-a3b5-4498-94de-14db3899650c">
-      <input type="hidden" name="date" value="${date}">
-      <input type="hidden" name="type" value="${type}">
-      <input type="hidden" name="note" value="${note}">
-      <input type="hidden" name="amount" value="${amount}">
-    `
-  }))
-})
-.then(r => r.json())
-.then(r => {
-  if (r.success) {
-    alert("تم إرسال الحركة إلى الإيميل ✔️");
-  } else {
-    alert("فشل الإرسال ❌");
-  }
-});
 
         if (!date || !amount) {
             alert("يرجى إدخال التاريخ والمبلغ");
             return;
         }
 
-        expenses.push({ date, type, note, amount });
+        // تحويل المبلغ إلى رقم
+        let numAmount = Number(amount) || 0;
 
+        // حفظ في المصفوفة
+        expenses.push({ date, type, note, amount: numAmount });
+        saveToStorage();
         updateTable();
+        updateStats();
+
+        // إرسال تلقائي إلى الإيميل
+        fetch("https://api.web3forms.com/submit", {
+            method: "POST",
+            body: new FormData(Object.assign(document.createElement("form"), {
+                innerHTML: `
+                    <input type="hidden" name="access_key" value="454def9e-a3b5-4498-94de-14db3899650c">
+                    <input type="hidden" name="date" value="${date}">
+                    <input type="hidden" name="type" value="${type}">
+                    <input type="hidden" name="note" value="${note}">
+                    <input type="hidden" name="amount" value="${numAmount}">
+                `
+            }))
+        })
+        .then(r => r.json())
+        .then(r => {
+            if (r.success) {
+                alert("تم إرسال الحركة إلى الإيميل ✔️");
+            } else {
+                alert("فشل الإرسال ❌");
+            }
+        })
+        .catch(() => {
+            alert("فشل الإرسال ❌");
+        });
+
+        // تفريغ الحقول ( ماعدا التاريخ إذا تحب تكرّر )
+        document.getElementById("note").value = "";
+        document.getElementById("amount").value = "";
     }
 
     function updateTable() {
@@ -191,6 +284,14 @@ fetch("https://api.web3forms.com/submit", {
                 </tr>
             `;
         });
+    }
+
+    function updateStats() {
+        let total = expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+        let remaining = (Number(salary) || 0) - total;
+
+        document.getElementById("totalValue").innerText = total;
+        document.getElementById("remainValue").innerText = remaining;
     }
 
     function exportExcel() {
@@ -225,7 +326,9 @@ fetch("https://api.web3forms.com/submit", {
             tDate: "التاريخ",
             tType: "النوع",
             tNote: "ملاحظة",
-            tAmount: "المبلغ"
+            tAmount: "المبلغ",
+            total: "إجمالي المصاريف",
+            remain: "المتبقي من الراتب"
         },
 
         ku: {
@@ -238,7 +341,9 @@ fetch("https://api.web3forms.com/submit", {
             tDate: "رێکەوت",
             tType: "جۆر",
             tNote: "تێبینی",
-            tAmount: "بڕ"
+            tAmount: "بڕ",
+            total: "کۆی خەرجی",
+            remain: "ماوەی مووچە"
         },
 
         en: {
@@ -251,7 +356,9 @@ fetch("https://api.web3forms.com/submit", {
             tDate: "Date",
             tType: "Type",
             tNote: "Note",
-            tAmount: "Amount"
+            tAmount: "Amount",
+            total: "Total Expenses",
+            remain: "Salary Remaining"
         }
     };
 
@@ -267,10 +374,11 @@ fetch("https://api.web3forms.com/submit", {
         document.getElementById("tType").innerText = lang[l].tType;
         document.getElementById("tNote").innerText = lang[l].tNote;
         document.getElementById("tAmount").innerText = lang[l].tAmount;
+
+        document.getElementById("totalLabel").innerText = lang[l].total;
+        document.getElementById("remainLabel").innerText = lang[l].remain;
     }
 </script>
 
-
 </body>
 </html>
-
