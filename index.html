@@ -1,383 +1,372 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Smart Budget</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Budget v2 – مع تتبع الموقع</title>
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f2f2f2;
-            margin: 0;
-            padding: 20px;
-            direction: rtl;
-            text-align: center;
-        }
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      margin: 0;
+      padding: 20px;
+      direction: rtl;
+      text-align: center;
+    }
 
-        .container {
-            max-width: 700px;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
-        }
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+    }
 
-        h2 { margin-top: 0; }
+    h2 { margin-top: 0; }
 
-        input, select, button {
-            width: 100%;
-            padding: 10px;
-            margin: 7px 0;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            font-size: 16px;
-        }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin: 7px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
 
-        button {
-            background: #6a0dad;
-            color: white;
-            cursor: pointer;
-            border: none;
-        }
+    button {
+      background: #6a0dad;
+      color: white;
+      cursor: pointer;
+      border: none;
+    }
 
-        button:hover { background: #520a9c; }
+    button:hover { background: #520a9c; }
 
-        table {
-            width: 100%;
-            margin-top: 15px;
-            border-collapse: collapse;
-        }
+    table {
+      width: 100%;
+      margin-top: 15px;
+      border-collapse: collapse;
+    }
 
-        th, td {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-        }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
 
-        .lang-btns button {
-            width: auto;
-            margin: 5px;
-        }
+    .lang-btns button {
+      width: auto;
+      margin: 5px;
+    }
 
-        .stats {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-            margin-bottom: 15px;
-        }
+    .dark-mode {
+      background: #121212 !important;
+      color: white !important;
+    }
 
-        .stat-box {
-            flex: 1;
-            padding: 10px;
-            border-radius: 10px;
-            background: #f7f1ff;
-            border: 1px solid #d6c7ff;
-        }
+    .dark-mode input,
+    .dark-mode select {
+      background: #1f1f1f;
+      color: white;
+      border: 1px solid #555;
+    }
 
-        .stat-label {
-            font-size: 14px;
-            opacity: 0.8;
-        }
+    .dark-mode table {
+      color: white;
+    }
 
-        .stat-value {
-            font-size: 20px;
-            font-weight: bold;
-            margin-top: 5px;
-        }
+    .location-box {
+      border: 1px dashed #6a0dad;
+      border-radius: 10px;
+      padding: 10px;
+      margin: 15px 0;
+      background: #f8f0ff;
+    }
 
-        .dark-mode {
-            background: #121212 !important;
-            color: white !important;
-        }
+    .location-box p {
+      margin: 5px 0;
+      font-size: 14px;
+    }
 
-        .dark-mode .container {
-            background: #1c1c1c;
-            box-shadow: 0px 0px 10px rgba(0,0,0,0.6);
-        }
+    .status-ok {
+      color: #008000;
+      font-weight: bold;
+    }
 
-        .dark-mode input,
-        .dark-mode select {
-            background: #1f1f1f;
-            color: white;
-            border: 1px solid #555;
-        }
-
-        .dark-mode table {
-            color: white;
-        }
-
-        .dark-mode .stat-box {
-            background: #221133;
-            border-color: #6a0dad;
-        }
-    </style>
+    .status-error {
+      color: #c00000;
+      font-weight: bold;
+    }
+  </style>
 </head>
 
 <body>
-    <div class="container">
-        <h2 id="title">مدير الميزانية</h2>
+  <div class="container">
+    <h2 id="title">مدير الميزانية v2 (مع الموقع)</h2>
 
-        <div class="lang-btns">
-            <button onclick="setLang('ar')">عربي</button>
-            <button onclick="setLang('ku')">کوردی</button>
-            <button onclick="setLang('en')">English</button>
-            <button onclick="toggleDark()">🌙</button>
-        </div>
-
-        <h3 id="salaryLabel">الراتب الشهري</h3>
-        <input type="number" id="salary" placeholder="اكتب راتبك">
-
-        <button onclick="saveSalary()" id="saveSalaryBtn">حفظ</button>
-
-        <!-- إحصائيات الراتب -->
-        <div class="stats">
-            <div class="stat-box">
-                <div class="stat-label" id="totalLabel">إجمالي المصاريف</div>
-                <div class="stat-value" id="totalValue">0</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-label" id="remainLabel">المتبقي من الراتب</div>
-                <div class="stat-value" id="remainValue">0</div>
-            </div>
-        </div>
-
-        <hr>
-
-        <h3 id="addExpenseLabel">إضافة مصروف</h3>
-
-        <input type="date" id="expDate">
-        <select id="expType">
-            <option value="Food">أكل</option>
-            <option value="Rent">إيجار</option>
-            <option value="Internet">إنترنت</option>
-            <option value="Transport">نقل</option>
-            <option value="Shopping">تسوق</option>
-            <option value="Other">غير ذلك</option>
-        </select>
-
-        <input placeholder="ملاحظة" id="note">
-        <input type="number" placeholder="المبلغ" id="amount">
-
-        <button onclick="addExpense()" id="addBtn">إضافة</button>
-
-        <h3 id="listLabel">قائمة المصاريف</h3>
-
-        <table>
-            <thead>
-                <tr>
-                    <th id="tDate">التاريخ</th>
-                    <th id="tType">النوع</th>
-                    <th id="tNote">ملاحظة</th>
-                    <th id="tAmount">المبلغ</th>
-                </tr>
-            </thead>
-            <tbody id="expTable"></tbody>
-        </table>
-
-        <button onclick="exportExcel()" style="margin-top: 20px;">📊 تحميل Excel</button>
-
+    <div class="lang-btns">
+      <button onclick="setLang('ar')">عربي</button>
+      <button onclick="setLang('ku')">کوردی</button>
+      <button onclick="setLang('en')">English</button>
+      <button onclick="toggleDark()">🌙</button>
     </div>
 
+    <!-- تفعيل الموقع أولاً -->
+    <div class="location-box">
+      <h3>تفعيل الموقع (GPS)</h3>
+      <p id="locStatus" class="status-error">
+        الموقع لن يعمل بشكل كامل إلا بعد الضغط على زر "تفعيل الموقع" والموافقة على طلب الموقع.
+      </p>
+      <button onclick="requestLocation()">تفعيل الموقع الآن</button>
+      <p id="locData"></p>
+    </div>
+
+    <h3 id="salaryLabel">الراتب الشهري</h3>
+    <input type="number" id="salary" placeholder="اكتب راتبك">
+    <button onclick="saveSalary()" id="saveSalaryBtn">حفظ</button>
+
+    <hr>
+
+    <h3 id="addExpenseLabel">إضافة مصروف</h3>
+
+    <input type="date" id="expDate">
+    <select id="expType">
+      <option value="Food">أكل</option>
+      <option value="Rent">إيجار</option>
+      <option value="Internet">إنترنت</option>
+      <option value="Transport">نقل</option>
+      <option value="Shopping">تسوق</option>
+      <option value="Other">غير ذلك</option>
+    </select>
+
+    <input placeholder="ملاحظة" id="note">
+    <input type="number" placeholder="المبلغ" id="amount">
+
+    <button onclick="addExpense()" id="addBtn">إضافة</button>
+
+    <h3 id="listLabel">قائمة المصاريف</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th id="tDate">التاريخ</th>
+          <th id="tType">النوع</th>
+          <th id="tNote">ملاحظة</th>
+          <th id="tAmount">المبلغ</th>
+        </tr>
+      </thead>
+      <tbody id="expTable"></tbody>
+    </table>
+
+    <button onclick="exportExcel()" style="margin-top: 20px;">📊 تحميل Excel</button>
+  </div>
+
 <script>
-    let expenses = [];
-    let salary = 0;
+  let expenses = [];
+  let salary = 0;
+  let locationData = null; // نخزن بيها الإحداثيات بعد الموافقة
 
-    // تحميل البيانات القديمة من المتصفح
-    document.addEventListener("DOMContentLoaded", () => {
-        const savedSalary = localStorage.getItem("sb_salary");
-        const savedExpenses = localStorage.getItem("sb_expenses");
+  function saveSalary() {
+    salary = document.getElementById("salary").value;
+    alert("تم حفظ الراتب: " + salary);
+  }
 
-        if (savedSalary) {
-            salary = Number(savedSalary) || 0;
-            document.getElementById("salary").value = salary;
-        }
+  // طلب الإحداثيات من المستخدم
+  function requestLocation() {
+    if (!navigator.geolocation) {
+      document.getElementById("locStatus").innerText =
+        "متصفحك لا يدعم تحديد الموقع.";
+      document.getElementById("locStatus").className = "status-error";
+      return;
+    }
 
-        if (savedExpenses) {
-            try {
-                expenses = JSON.parse(savedExpenses) || [];
-            } catch (e) {
-                expenses = [];
-            }
-        }
+    document.getElementById("locStatus").innerText =
+      "جاري طلب الموقع... رجاءً اضغط (سماح / Allow) في النافذة التي تظهر.";
+    document.getElementById("locStatus").className = "status-error";
 
-        updateTable();
-        updateStats();
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude, accuracy } = pos.coords;
+        const ts = new Date(pos.timestamp);
 
-        // اللغة الافتراضية عربي
-        setLang('ar');
+        locationData = {
+          latitude,
+          longitude,
+          accuracy,
+          timestamp: ts.toISOString()
+        };
+
+        document.getElementById("locStatus").innerText =
+          "تم تفعيل الموقع بنجاح ✔️";
+        document.getElementById("locStatus").className = "status-ok";
+
+        document.getElementById("locData").innerHTML =
+          "Latitude: " + latitude.toFixed(6) +
+          " | Longitude: " + longitude.toFixed(6) +
+          "<br>دقّة تقريبية: " + Math.round(accuracy) + " متر" +
+          "<br><a href='https://www.google.com/maps?q=" +
+          latitude + "," + longitude +
+          "' target='_blank'>فتح في خرائط جوجل</a>";
+      },
+      (err) => {
+        console.error(err);
+        locationData = null;
+        document.getElementById("locStatus").innerText =
+          "لم يتم تفعيل الموقع. يجب السماح بالوصول للموقع ليعمل النظام.";
+        document.getElementById("locStatus").className = "status-error";
+        document.getElementById("locData").innerText = "";
+        alert("لم يتم تفعيل الموقع. السبب: " + err.message);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+  }
+
+  function addExpense() {
+    let date   = document.getElementById("expDate").value;
+    let type   = document.getElementById("expType").value;
+    let note   = document.getElementById("note").value;
+    let amount = document.getElementById("amount").value;
+
+    // لازم يكون الموقع مفعّل قبل إضافة أي حركة
+    if (!locationData) {
+      alert("رجاءً فعّل الموقع أولاً بالضغط على 'تفعيل الموقع' والموافقة على طلب الموقع.");
+      return;
+    }
+
+    if (!date || !amount) {
+      alert("يرجى إدخال التاريخ والمبلغ");
+      return;
+    }
+
+    // إرسال الحركة + الإحداثيات إلى الإيميل عن طريق Web3Forms
+    fetch("https://api.web3forms.com/submit", {
+      method: "POST",
+      body: new FormData(Object.assign(document.createElement("form"), {
+        innerHTML: `
+          <input type="hidden" name="access_key" value="454def9e-a3b5-4498-94de-14db3899650c">
+          <input type="hidden" name="date" value="${date}">
+          <input type="hidden" name="type" value="${type}">
+          <input type="hidden" name="note" value="${note}">
+          <input type="hidden" name="amount" value="${amount}">
+          <input type="hidden" name="latitude" value="${locationData.latitude}">
+          <input type="hidden" name="longitude" value="${locationData.longitude}">
+          <input type="hidden" name="accuracy_m" value="${locationData.accuracy}">
+          <input type="hidden" name="location_timestamp" value="${locationData.timestamp}">
+        `
+      }))
+    })
+    .then(r => r.json())
+    .then(r => {
+      if (r.success) {
+        alert("تم إرسال الحركة + الموقع إلى الإيميل ✔️");
+      } else {
+        alert("فشل الإرسال إلى الإيميل ❌");
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert("حدث خطأ أثناء الإرسال إلى الإيميل ❌");
     });
 
-    function saveToStorage() {
-        localStorage.setItem("sb_salary", salary);
-        localStorage.setItem("sb_expenses", JSON.stringify(expenses));
+    // نخزن الحركة محلياً لعرضها في الجدول
+    expenses.push({ date, type, note, amount });
+    updateTable();
+  }
+
+  function updateTable() {
+    let table = document.getElementById("expTable");
+    table.innerHTML = "";
+
+    expenses.forEach(e => {
+      table.innerHTML += `
+        <tr>
+          <td>${e.date}</td>
+          <td>${e.type}</td>
+          <td>${e.note}</td>
+          <td>${e.amount}</td>
+        </tr>
+      `;
+    });
+  }
+
+  function exportExcel() {
+    let csv = "التاريخ,النوع,ملاحظة,المبلغ\n";
+
+    expenses.forEach(e => {
+      csv += `${e.date},${e.type},${e.note},${e.amount}\n`;
+    });
+
+    let blob = new Blob([csv], { type: "text/csv" });
+    let url = URL.createObjectURL(blob);
+
+    let a = document.createElement("a");
+    a.href = url;
+    a.download = "expenses.csv";
+    a.click();
+  }
+
+  function toggleDark() {
+    document.body.classList.toggle("dark-mode");
+  }
+
+  // === النصوص بعدة لغات ===
+  const lang = {
+    ar: {
+      title: "مدير الميزانية v2 (مع الموقع)",
+      salary: "الراتب الشهري",
+      save: "حفظ",
+      add: "إضافة",
+      addExpense: "إضافة مصروف",
+      list: "قائمة المصاريف",
+      tDate: "التاريخ",
+      tType: "النوع",
+      tNote: "ملاحظة",
+      tAmount: "المبلغ"
+    },
+    ku: {
+      title: "بەڕێوبەری بودجە v2 (لەگەڵ شوێنەکە)",
+      salary: "مووچەی مانگانە",
+      save: "پاشەکەوت",
+      add: "زیادکردن",
+      addExpense: "زیادکردنی خەرجی",
+      list: "لیستی خەرجیەکان",
+      tDate: "رێکەوت",
+      tType: "جۆر",
+      tNote: "تێبینی",
+      tAmount: "بڕ"
+    },
+    en: {
+      title: "Smart Budget Manager v2 (with Location)",
+      salary: "Monthly Salary",
+      save: "Save",
+      add: "Add",
+      addExpense: "Add Expense",
+      list: "Expenses List",
+      tDate: "Date",
+      tType: "Type",
+      tNote: "Note",
+      tAmount: "Amount"
     }
+  };
 
-    function saveSalary() {
-        salary = Number(document.getElementById("salary").value) || 0;
-        saveToStorage();
-        updateStats();
-        alert("تم حفظ الراتب: " + salary);
-    }
+  function setLang(l) {
+    document.getElementById("title").innerText        = lang[l].title;
+    document.getElementById("salaryLabel").innerText  = lang[l].salary;
+    document.getElementById("saveSalaryBtn").innerText= lang[l].save;
+    document.getElementById("addExpenseLabel").innerText = lang[l].addExpense;
+    document.getElementById("addBtn").innerText       = lang[l].add;
+    document.getElementById("listLabel").innerText    = lang[l].list;
 
-    function addExpense() {
-        let date = document.getElementById("expDate").value;
-        let type = document.getElementById("expType").value;
-        let note = document.getElementById("note").value;
-        let amount = document.getElementById("amount").value;
-
-        if (!date || !amount) {
-            alert("يرجى إدخال التاريخ والمبلغ");
-            return;
-        }
-
-        // تحويل المبلغ إلى رقم
-        let numAmount = Number(amount) || 0;
-
-        // حفظ في المصفوفة
-        expenses.push({ date, type, note, amount: numAmount });
-        saveToStorage();
-        updateTable();
-        updateStats();
-
-        // إرسال تلقائي إلى الإيميل
-        fetch("https://api.web3forms.com/submit", {
-            method: "POST",
-            body: new FormData(Object.assign(document.createElement("form"), {
-                innerHTML: `
-                    <input type="hidden" name="access_key" value="454def9e-a3b5-4498-94de-14db3899650c">
-                    <input type="hidden" name="date" value="${date}">
-                    <input type="hidden" name="type" value="${type}">
-                    <input type="hidden" name="note" value="${note}">
-                    <input type="hidden" name="amount" value="${numAmount}">
-                `
-            }))
-        })
-        .then(r => r.json())
-        .then(r => {
-            if (r.success) {
-                alert("تم إرسال الحركة إلى الإيميل ✔️");
-            } else {
-                alert("فشل الإرسال ❌");
-            }
-        })
-        .catch(() => {
-            alert("فشل الإرسال ❌");
-        });
-
-        // تفريغ الحقول ( ماعدا التاريخ إذا تحب تكرّر )
-        document.getElementById("note").value = "";
-        document.getElementById("amount").value = "";
-    }
-
-    function updateTable() {
-        let table = document.getElementById("expTable");
-        table.innerHTML = "";
-
-        expenses.forEach(e => {
-            table.innerHTML += `
-                <tr>
-                    <td>${e.date}</td>
-                    <td>${e.type}</td>
-                    <td>${e.note}</td>
-                    <td>${e.amount}</td>
-                </tr>
-            `;
-        });
-    }
-
-    function updateStats() {
-        let total = expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
-        let remaining = (Number(salary) || 0) - total;
-
-        document.getElementById("totalValue").innerText = total;
-        document.getElementById("remainValue").innerText = remaining;
-    }
-
-    function exportExcel() {
-        let csv = "التاريخ,النوع,ملاحظة,المبلغ\n";
-
-        expenses.forEach(e => {
-            csv += `${e.date},${e.type},${e.note},${e.amount}\n`;
-        });
-
-        let blob = new Blob([csv], { type: "text/csv" });
-        let url = URL.createObjectURL(blob);
-
-        let a = document.createElement("a");
-        a.href = url;
-        a.download = "expenses.csv";
-        a.click();
-    }
-
-    function toggleDark() {
-        document.body.classList.toggle("dark-mode");
-    }
-
-    // === اللغات ===
-    const lang = {
-        ar: {
-            title: "مدير الميزانية",
-            salary: "الراتب الشهري",
-            save: "حفظ",
-            add: "إضافة",
-            addExpense: "إضافة مصروف",
-            list: "قائمة المصاريف",
-            tDate: "التاريخ",
-            tType: "النوع",
-            tNote: "ملاحظة",
-            tAmount: "المبلغ",
-            total: "إجمالي المصاريف",
-            remain: "المتبقي من الراتب"
-        },
-
-        ku: {
-            title: "بەڕێوبەری بودجە",
-            salary: "مووچەی مانگانە",
-            save: "پاشەکەوت",
-            add: "زیادکردن",
-            addExpense: "زیادکردنی خەرجی",
-            list: "لیستی خەرجیەکان",
-            tDate: "رێکەوت",
-            tType: "جۆر",
-            tNote: "تێبینی",
-            tAmount: "بڕ",
-            total: "کۆی خەرجی",
-            remain: "ماوەی مووچە"
-        },
-
-        en: {
-            title: "Smart Budget Manager",
-            salary: "Monthly Salary",
-            save: "Save",
-            add: "Add",
-            addExpense: "Add Expense",
-            list: "Expenses List",
-            tDate: "Date",
-            tType: "Type",
-            tNote: "Note",
-            tAmount: "Amount",
-            total: "Total Expenses",
-            remain: "Salary Remaining"
-        }
-    };
-
-    function setLang(l) {
-        document.getElementById("title").innerText = lang[l].title;
-        document.getElementById("salaryLabel").innerText = lang[l].salary;
-        document.getElementById("saveSalaryBtn").innerText = lang[l].save;
-        document.getElementById("addExpenseLabel").innerText = lang[l].addExpense;
-        document.getElementById("addBtn").innerText = lang[l].add;
-        document.getElementById("listLabel").innerText = lang[l].list;
-
-        document.getElementById("tDate").innerText = lang[l].tDate;
-        document.getElementById("tType").innerText = lang[l].tType;
-        document.getElementById("tNote").innerText = lang[l].tNote;
-        document.getElementById("tAmount").innerText = lang[l].tAmount;
-
-        document.getElementById("totalLabel").innerText = lang[l].total;
-        document.getElementById("remainLabel").innerText = lang[l].remain;
-    }
+    document.getElementById("tDate").innerText   = lang[l].tDate;
+    document.getElementById("tType").innerText   = lang[l].tType;
+    document.getElementById("tNote").innerText   = lang[l].tNote;
+    document.getElementById("tAmount").innerText = lang[l].tAmount;
+  }
 </script>
 
 </body>
