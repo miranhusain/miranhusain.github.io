@@ -1,1 +1,254 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Budget</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+            margin: 0;
+            padding: 20px;
+            direction: rtl;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+        }
+
+        h2 { margin-top: 0; }
+
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin: 7px 0;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        button {
+            background: #6a0dad;
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+
+        button:hover { background: #520a9c; }
+
+        table {
+            width: 100%;
+            margin-top: 15px;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .lang-btns button {
+            width: auto;
+            margin: 5px;
+        }
+
+        .dark-mode {
+            background: #121212 !important;
+            color: white !important;
+        }
+
+        .dark-mode input, 
+        .dark-mode select {
+            background: #1f1f1f;
+            color: white;
+            border: 1px solid #555;
+        }
+
+        .dark-mode table {
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2 id="title">مدير الميزانية</h2>
+
+        <div class="lang-btns">
+            <button onclick="setLang('ar')">عربي</button>
+            <button onclick="setLang('ku')">کوردی</button>
+            <button onclick="setLang('en')">English</button>
+            <button onclick="toggleDark()">🌙</button>
+        </div>
+
+        <h3 id="salaryLabel">الراتب الشهري</h3>
+        <input type="number" id="salary" placeholder="اكتب راتبك">
+
+        <button onclick="saveSalary()" id="saveSalaryBtn">حفظ</button>
+
+        <hr>
+
+        <h3 id="addExpenseLabel">إضافة مصروف</h3>
+
+        <input type="date" id="expDate">
+        <select id="expType">
+            <option value="Food">أكل</option>
+            <option value="Rent">إيجار</option>
+            <option value="Internet">إنترنت</option>
+            <option value="Transport">نقل</option>
+            <option value="Shopping">تسوق</option>
+            <option value="Other">غير ذلك</option>
+        </select>
+
+        <input placeholder="ملاحظة" id="note">
+        <input type="number" placeholder="المبلغ" id="amount">
+
+        <button onclick="addExpense()" id="addBtn">إضافة</button>
+
+        <h3 id="listLabel">قائمة المصاريف</h3>
+
+        <table>
+            <thead>
+                <tr>
+                    <th id="tDate">التاريخ</th>
+                    <th id="tType">النوع</th>
+                    <th id="tNote">ملاحظة</th>
+                    <th id="tAmount">المبلغ</th>
+                </tr>
+            </thead>
+            <tbody id="expTable"></tbody>
+        </table>
+
+        <button onclick="exportExcel()" style="margin-top: 20px;">📊 تحميل Excel</button>
+
+    </div>
+
+<script>
+    let expenses = [];
+    let salary = 0;
+
+    function saveSalary() {
+        salary = document.getElementById("salary").value;
+        alert("تم حفظ الراتب: " + salary);
+    }
+
+    function addExpense() {
+        let date = document.getElementById("expDate").value;
+        let type = document.getElementById("expType").value;
+        let note = document.getElementById("note").value;
+        let amount = document.getElementById("amount").value;
+
+        if (!date || !amount) {
+            alert("يرجى إدخال التاريخ والمبلغ");
+            return;
+        }
+
+        expenses.push({ date, type, note, amount });
+
+        updateTable();
+    }
+
+    function updateTable() {
+        let table = document.getElementById("expTable");
+        table.innerHTML = "";
+
+        expenses.forEach(e => {
+            table.innerHTML += `
+                <tr>
+                    <td>${e.date}</td>
+                    <td>${e.type}</td>
+                    <td>${e.note}</td>
+                    <td>${e.amount}</td>
+                </tr>
+            `;
+        });
+    }
+
+    function exportExcel() {
+        let csv = "التاريخ,النوع,ملاحظة,المبلغ\n";
+
+        expenses.forEach(e => {
+            csv += `${e.date},${e.type},${e.note},${e.amount}\n`;
+        });
+
+        let blob = new Blob([csv], { type: "text/csv" });
+        let url = URL.createObjectURL(blob);
+
+        let a = document.createElement("a");
+        a.href = url;
+        a.download = "expenses.csv";
+        a.click();
+    }
+
+    function toggleDark() {
+        document.body.classList.toggle("dark-mode");
+    }
+
+    // === اللغات ===
+    const lang = {
+        ar: {
+            title: "مدير الميزانية",
+            salary: "الراتب الشهري",
+            save: "حفظ",
+            add: "إضافة",
+            addExpense: "إضافة مصروف",
+            list: "قائمة المصاريف",
+            tDate: "التاريخ",
+            tType: "النوع",
+            tNote: "ملاحظة",
+            tAmount: "المبلغ"
+        },
+
+        ku: {
+            title: "بەڕێوبەری بودجە",
+            salary: "مووچەی مانگانە",
+            save: "پاشەکەوت",
+            add: "زیادکردن",
+            addExpense: "زیادکردنی خەرجی",
+            list: "لیستی خەرجیەکان",
+            tDate: "رێکەوت",
+            tType: "جۆر",
+            tNote: "تێبینی",
+            tAmount: "بڕ"
+        },
+
+        en: {
+            title: "Smart Budget Manager",
+            salary: "Monthly Salary",
+            save: "Save",
+            add: "Add",
+            addExpense: "Add Expense",
+            list: "Expenses List",
+            tDate: "Date",
+            tType: "Type",
+            tNote: "Note",
+            tAmount: "Amount"
+        }
+    };
+
+    function setLang(l) {
+        document.getElementById("title").innerText = lang[l].title;
+        document.getElementById("salaryLabel").innerText = lang[l].salary;
+        document.getElementById("saveSalaryBtn").innerText = lang[l].save;
+        document.getElementById("addExpenseLabel").innerText = lang[l].addExpense;
+        document.getElementById("addBtn").innerText = lang[l].add;
+        document.getElementById("listLabel").innerText = lang[l].list;
+
+        document.getElementById("tDate").innerText = lang[l].tDate;
+        document.getElementById("tType").innerText = lang[l].tType;
+        document.getElementById("tNote").innerText = lang[l].tNote;
+        document.getElementById("tAmount").innerText = lang[l].tAmount;
+    }
+</script>
+
+</body>
+</html>
 
