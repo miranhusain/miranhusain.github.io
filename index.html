@@ -1,513 +1,936 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>مدير الميزانية V2</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>تحليل ميزانيه</title>
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f2f2f2;
-            margin: 0;
-            padding: 20px;
-            direction: rtl;
-            text-align: center;
-        }
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --bg: #f3f4f6;
+      --card-bg: #ffffff;
+      --text-main: #111827;
+      --muted: #6b7280;
+      --danger: #dc2626;
+      --success: #059669;
+    }
 
-        .container {
-            max-width: 700px;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
-        }
+    * {
+      box-sizing: border-box;
+    }
 
-        h2 { margin-top: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      background: var(--bg);
+      margin: 0;
+      padding: 0;
+      direction: rtl;
+      color: var(--text-main);
+    }
 
-        input, select, button {
-            width: 100%;
-            padding: 10px;
-            margin: 7px 0;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            font-size: 16px;
-        }
+    /* هيدر ثابت */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: #0f172a;
+      color: #e5e7eb;
+      padding: 10px 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
 
-        button {
-            background: #6a0dad;
-            color: white;
-            cursor: pointer;
-            border: none;
-        }
+    header .title {
+      font-size: 18px;
+      font-weight: bold;
+    }
 
-        button:hover { background: #520a9c; }
+    header .user-info {
+      font-size: 13px;
+      text-align: left;
+    }
 
-        table {
-            width: 100%;
-            margin-top: 15px;
-            border-collapse: collapse;
-        }
+    header button {
+      background: #ef4444;
+      border: none;
+      color: white;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 12px;
+    }
 
-        th, td {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-        }
+    main {
+      padding: 15px;
+      max-width: 900px;
+      margin: 0 auto 40px auto;
+    }
 
-        .lang-btns button {
-            width: auto;
-            margin: 5px;
-        }
+    .card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 8px 24px rgba(15,23,42,0.08);
+    }
 
-        .dark-mode {
-            background: #121212 !important;
-            color: white !important;
-        }
+    h2, h3 {
+      margin: 0 0 10px 0;
+    }
 
-        .dark-mode input,
-        .dark-mode select {
-            background: #1f1f1f;
-            color: white;
-            border: 1px solid #555;
-        }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin: 6px 0;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      font-size: 15px;
+    }
 
-        .dark-mode table {
-            color: white;
-        }
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(37,99,235,0.2);
+    }
 
-        /* صندوق تفعيل الموقع */
-        .gps-box {
-            border-radius: 10px;
-            padding: 15px;
-            background: #f6f0ff;
-            border: 1px dashed #b48cff;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
+    button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      font-weight: 600;
+    }
 
-        .gps-status {
-            font-size: 14px;
-            margin-top: 5px;
-            color: #555;
-        }
+    button:hover {
+      background: var(--primary-dark);
+    }
 
-        /* صندوق AI */
-        .ai-box {
-            margin-top: 20px;
-            padding: 15px;
-            background: #e8fff2;
-            border-radius: 10px;
-            text-align: right;
-            font-size: 14px;
-        }
+    .btn-small {
+      width: auto;
+      padding: 6px 10px;
+      font-size: 12px;
+      border-radius: 999px;
+      margin: 0 2px;
+    }
 
-        .ai-box h3 {
-            margin-top: 0;
-            text-align: center;
-        }
+    .muted {
+      font-size: 12px;
+      color: var(--muted);
+    }
 
-        /* شاشة تسجيل الدخول */
-        #loginBox {
-            max-width: 400px;
-            margin: 40px auto;
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
-        }
+    .row {
+      display: flex;
+      gap: 10px;
+    }
 
-        #loginBox h2 {
-            margin-bottom: 10px;
-        }
+    .row > div {
+      flex: 1;
+    }
 
-        .hint {
-            font-size: 12px;
-            color: #777;
-        }
-    </style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th, td {
+      padding: 8px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: center;
+    }
+
+    th {
+      background: #e5e7eb;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      font-size: 11px;
+    }
+
+    /* شاشة تسجيل الدخول */
+    #loginScreen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    #loginBox {
+      width: 100%;
+      max-width: 380px;
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(15,23,42,0.18);
+      text-align: center;
+    }
+
+    #loginBox h2 {
+      margin-bottom: 5px;
+    }
+
+    .lang-buttons {
+      margin: 8px 0 4px;
+    }
+
+    .lang-buttons button {
+      width: auto;
+      padding: 5px 10px;
+      margin: 0 3px;
+      font-size: 12px;
+      border-radius: 999px;
+    }
+
+    /* أوفرلي طلب الموقع */
+    #gpsOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.96);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 100;
+    }
+
+    #gpsBox {
+      max-width: 420px;
+      width: 100%;
+      background: #020617;
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+      text-align: center;
+    }
+
+    #gpsBox h2 {
+      margin-bottom: 10px;
+    }
+
+    #gpsBox p {
+      font-size: 14px;
+      color: #9ca3af;
+      margin: 5px 0;
+    }
+
+    #gpsBox button {
+      margin-top: 10px;
+      border-radius: 999px;
+    }
+
+    #gpsStatus {
+      font-size: 12px;
+      margin-top: 6px;
+      min-height: 16px;
+    }
+
+    /* AI box */
+    .ai-box {
+      background: #eff6ff;
+      border-radius: 14px;
+      padding: 10px;
+      margin-top: 10px;
+      text-align: right;
+    }
+
+    .ai-title {
+      font-size: 13px;
+      color: #1d4ed8;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    #aiText {
+      font-size: 13px;
+      white-space: pre-line;
+    }
+
+    /* تبويبات (ميزانية / إدارة) للأدمن */
+    .tabs {
+      display: flex;
+      margin-bottom: 10px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      padding: 3px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      border-radius: 999px;
+      border: none;
+      background: transparent;
+      font-size: 13px;
+      padding: 6px;
+      color: #4b5563;
+    }
+
+    .tab-btn.active {
+      background: #ffffff;
+      color: #111827;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 600px) {
+      main {
+        padding: 10px;
+      }
+
+      header .title {
+        font-size: 16px;
+      }
+
+      header .user-info {
+        font-size: 11px;
+      }
+
+      .row {
+        flex-direction: column;
+      }
+    }
+  </style>
 </head>
 
 <body>
 
-    <!-- شاشة تسجيل الدخول -->
+  <!-- شاشة طلب الموقع (قبل أي شيء) -->
+  <div id="gpsOverlay">
+    <div id="gpsBox">
+      <h2>📍 تفعيل خدمة الموقع</h2>
+      <p>لأمان أعلى وتحليل أدق، يحتاج <b>تحليل ميزانيه</b> إذن الوصول للموقع التقريبي عند تسجيل المصاريف.</p>
+      <p class="muted">لن يتم مشاركة موقعك مع أي طرف آخر، فقط يُستخدم في الإيميل الذي يصلك أنت.</p>
+      <button onclick="requestLocation()">تفعيل الموقع الآن</button>
+      <div id="gpsStatus"></div>
+    </div>
+  </div>
+
+  <!-- شاشة تسجيل الدخول -->
+  <div id="loginScreen" class="hidden">
     <div id="loginBox">
-        <h2>تسجيل الدخول</h2>
-        <p class="hint">هذا النظام شخصي، ادخل كلمة المرور للدخول إلى مدير الميزانية.</p>
-        <input type="password" id="loginPass" placeholder="أدخل كلمة المرور">
-        <button onclick="login()">دخول</button>
+      <h2>تسجيل الدخول</h2>
+      <p class="muted">هذا النظام شخصي. يرجى إدخال اسم المستخدم وكلمة المرور.</p>
+
+      <div class="lang-buttons">
+        <button class="btn-small" onclick="setLang('ar')">عربي</button>
+        <button class="btn-small" onclick="setLang('ku')">کوردی</button>
+        <button class="btn-small" onclick="setLang('en')">English</button>
+      </div>
+
+      <input type="text" id="loginUser" placeholder="اسم المستخدم">
+      <input type="password" id="loginPass" placeholder="كلمة المرور">
+      <button onclick="login()">دخول</button>
+      <p class="muted" id="loginHint">Admin: admin / 123456</p>
+    </div>
+  </div>
+
+  <!-- التطبيق بعد تسجيل الدخول -->
+  <header class="hidden" id="appHeader">
+    <div class="title">تحليل ميزانيه</div>
+    <div class="user-info">
+      <div id="headerUser">المستخدم: —</div>
+      <button onclick="logout()">خروج</button>
+    </div>
+  </header>
+
+  <main class="hidden" id="appMain">
+    <div class="card">
+      <div class="tabs" id="adminTabs" style="display:none;">
+        <button class="tab-btn active" id="tabBudget" onclick="switchTab('budget')">الميزانية</button>
+        <button class="tab-btn" id="tabAdmin" onclick="switchTab('admin')">الإدارة</button>
+      </div>
+
+      <div id="currentRole" class="muted"></div>
     </div>
 
-    <!-- التطبيق الرئيسي -->
-    <div class="container" id="app" style="display:none;">
-        <h2 id="title">مدير الميزانية V2</h2>
-
-        <div class="lang-btns">
-            <button onclick="setLang('ar')">عربي</button>
-            <button onclick="setLang('ku')">کوردی</button>
-            <button onclick="setLang('en')">English</button>
-            <button onclick="toggleDark()">🌙</button>
-        </div>
-
-        <!-- تفعيل الموقع -->
-        <div class="gps-box">
-            <strong>تفعيل الموقع (GPS)</strong>
-            <p style="margin:8px 0 5px;">
-                من تضغط زر "تفعيل الموقع الآن"، المتصفح راح يطلب موافقة مشاركة الموقع.  
-                بدون تفعيل الموقع ما راح تنحفظ الحركات.
-            </p>
-            <button onclick="enableLocation()">تفعيل الموقع الآن</button>
-            <div id="gpsStatus" class="gps-status">الموقع غير مفعل بعد.</div>
-        </div>
-
+    <!-- شاشة الميزانية للمستخدم -->
+    <section id="budgetSection">
+      <div class="card">
         <h3 id="salaryLabel">الراتب الشهري</h3>
-        <input type="number" id="salary" placeholder="اكتب راتبك">
+        <input type="number" id="salaryInput" placeholder="اكتب راتبك">
+        <button onclick="saveSalary()" id="saveSalaryBtn">حفظ الراتب</button>
 
-        <button onclick="saveSalary()" id="saveSalaryBtn">حفظ</button>
+        <div class="row" style="margin-top:10px;">
+          <div>
+            <div class="muted">إجمالي المصاريف</div>
+            <div><span class="badge" id="totalSpend">0</span></div>
+          </div>
+          <div>
+            <div class="muted">المتبقي من الراتب</div>
+            <div><span class="badge" id="remainSalary">0</span></div>
+          </div>
+        </div>
+      </div>
 
-        <hr>
-
+      <div class="card">
         <h3 id="addExpenseLabel">إضافة مصروف</h3>
-
         <input type="date" id="expDate">
         <select id="expType">
-            <option value="Food">أكل</option>
-            <option value="Rent">إيجار</option>
-            <option value="Internet">إنترنت</option>
-            <option value="Transport">نقل</option>
-            <option value="Shopping">تسوق</option>
-            <option value="Other">غير ذلك</option>
+          <option value="Food">أكل</option>
+          <option value="Rent">إيجار</option>
+          <option value="Internet">إنترنت</option>
+          <option value="Transport">نقل</option>
+          <option value="Shopping">تسوق</option>
+          <option value="Other">غير ذلك</option>
         </select>
-
         <input placeholder="ملاحظة" id="note">
         <input type="number" placeholder="المبلغ" id="amount">
-
         <button onclick="addExpense()" id="addBtn">إضافة</button>
 
-        <h3 id="listLabel">قائمة المصاريف</h3>
-
-        <table>
-            <thead>
-                <tr>
-                    <th id="tDate">التاريخ</th>
-                    <th id="tType">النوع</th>
-                    <th id="tNote">ملاحظة</th>
-                    <th id="tAmount">المبلغ</th>
-                </tr>
-            </thead>
-            <tbody id="expTable"></tbody>
-        </table>
-
-        <button onclick="exportExcel()" style="margin-top: 20px;">📊 تحميل Excel</button>
-
-        <!-- مساعد الذكاء الاصطناعي -->
         <div class="ai-box">
-            <h3>مساعد الميزانية الذكي 💡</h3>
-            <p id="aiText">
-                أدخل راتبك ومصاريفك، وأنا أعطيك ملاحظات عن الصرف ونصائح للتوفير.
-            </p>
+          <div class="ai-title">🤖 مساعد الميزانية الذكي</div>
+          <div id="aiText">أدخل راتبك وأضف بعض المصاريف، وسأعطيك ملاحظات عن صرفك بثلاث لغات.</div>
         </div>
+      </div>
 
-    </div>
+      <div class="card">
+        <h3 id="listLabel">قائمة المصاريف</h3>
+        <div class="muted" id="gpsInfo">الموقع مفعل: —</div>
+        <table>
+          <thead>
+            <tr>
+              <th id="tDate">التاريخ</th>
+              <th id="tType">النوع</th>
+              <th id="tNote">ملاحظة</th>
+              <th id="tAmount">المبلغ</th>
+            </tr>
+          </thead>
+          <tbody id="expTable"></tbody>
+        </table>
+        <button onclick="exportExcel()" style="margin-top:10px;">📊 تحميل CSV (Excel)</button>
+      </div>
+    </section>
+
+    <!-- شاشة الإدارة (للأدمن فقط) -->
+    <section id="adminSection" class="hidden">
+      <div class="card">
+        <h3>إدارة المستخدمين</h3>
+        <p class="muted">أنت الأدمن. يمكنك إضافة مستخدمين جدد وكل مستخدم له مصاريفه الخاصة المخزنة على جهازه.</p>
+        <input type="text" id="newUserName" placeholder="اسم المستخدم الجديد">
+        <input type="password" id="newUserPass" placeholder="كلمة المرور للمستخدم">
+        <button onclick="addUser()">إضافة مستخدم</button>
+      </div>
+
+      <div class="card">
+        <h3>قائمة المستخدمين</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>اسم المستخدم</th>
+              <th>الدور</th>
+              <th>عمليات</th>
+            </tr>
+          </thead>
+          <tbody id="usersTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
 
 <script>
-    // ===== إعدادات عامة =====
-    const APP_PASSWORD = "1234"; // غيرها للرقم/الباس اللي يعجبك
+  // =========================
+  //  إعدادات عامة / لغة
+  // =========================
+  let currentLang = "ar";
+  let currentUser = null; // { username, role }
+  let users = [];         // { username, password, role }
+  let salary = 0;
+  let expenses = [];      // per-user
+  let gpsLat = null;
+  let gpsLng = null;
 
-    let expenses = [];
-    let salary = 0;
+  const ACCESS_KEY = "454def9e-a3b5-4498-94de-14db3899650c";
 
-    let gpsEnabled = false;
-    let gpsLat = null;
-    let gpsLng = null;
+  const lang = {
+    ar: {
+      loginHint: "Admin: admin / 123456",
+      salaryLabel: "الراتب الشهري",
+      saveSalaryBtn: "حفظ الراتب",
+      addExpenseLabel: "إضافة مصروف",
+      listLabel: "قائمة المصاريف",
+      tDate: "التاريخ",
+      tType: "النوع",
+      tNote: "ملاحظة",
+      tAmount: "المبلغ",
+      aiIntro: "أدخل راتبك وأضف بعض المصاريف، وسأعطيك ملاحظات عن صرفك بثلاث لغات.",
+      roleAdmin: "الدور: أدمن (مدير النظام)",
+      roleUser: "الدور: مستخدم عادي"
+    },
+    ku: {
+      loginHint: "Admin: admin / 123456",
+      salaryLabel: "مووچەی مانگانە",
+      saveSalaryBtn: "پاشەکەوتکردنی مووچە",
+      addExpenseLabel: "زیادکردنی خەرجی",
+      listLabel: "لیستی خەرجیەکان",
+      tDate: "رێکەوت",
+      tType: "جۆر",
+      tNote: "تێبینی",
+      tAmount: "بڕ",
+      aiIntro: "مووچەکەت داخل بکە و خەرجی زیاد بکە، من ڕاپۆرت و ڕاویستی خەرجی بۆت دەم.",
+      roleAdmin: "ڕۆڵ: بەڕێوبەر (ئادمین)",
+      roleUser: "ڕۆڵ: بەکارهێنەری ئاسایی"
+    },
+    en: {
+      loginHint: "Admin: admin / 123456",
+      salaryLabel: "Monthly Salary",
+      saveSalaryBtn: "Save Salary",
+      addExpenseLabel: "Add Expense",
+      listLabel: "Expenses List",
+      tDate: "Date",
+      tType: "Type",
+      tNote: "Note",
+      tAmount: "Amount",
+      aiIntro: "Enter your salary and some expenses, I'll give you insights and saving tips.",
+      roleAdmin: "Role: Admin",
+      roleUser: "Role: User"
+    }
+  };
 
-    // ===== تسجيل الدخول =====
-    function login() {
-        const pass = document.getElementById("loginPass").value.trim();
-        if (pass === APP_PASSWORD) {
-            localStorage.setItem("sb_loggedIn", "true");
-            document.getElementById("loginBox").style.display = "none";
-            document.getElementById("app").style.display = "block";
-            loadData();
-            loadLocationState();
-        } else {
-            alert("كلمة المرور غير صحيحة");
-        }
+  function setLang(l) {
+    currentLang = l;
+    document.getElementById("loginHint").innerText = lang[l].loginHint;
+    document.getElementById("salaryLabel").innerText = lang[l].salaryLabel;
+    document.getElementById("saveSalaryBtn").innerText = lang[l].saveSalaryBtn;
+    document.getElementById("addExpenseLabel").innerText = lang[l].addExpenseLabel;
+    document.getElementById("listLabel").innerText = lang[l].listLabel;
+    document.getElementById("tDate").innerText = lang[l].tDate;
+    document.getElementById("tType").innerText = lang[l].tType;
+    document.getElementById("tNote").innerText = lang[l].tNote;
+    document.getElementById("tAmount").innerText = lang[l].tAmount;
+    document.getElementById("aiText").innerText = lang[l].aiIntro;
+    updateRoleText();
+    aiAnalyze();
+  }
+
+  // =========================
+  //  GPS Overlay
+  // =========================
+  function requestLocation() {
+    const status = document.getElementById("gpsStatus");
+    status.style.color = "#e5e7eb";
+    status.innerText = "⏳ يرجى الموافقة على طلب الموقع من المتصفح...";
+
+    if (!navigator.geolocation) {
+      status.innerText = "جهازك لا يدعم خدمة تحديد الموقع.";
+      return;
     }
 
-    // إذا سبق ودخل صحيح، خليه يدخل مباشر
-    window.addEventListener("load", () => {
-        if (localStorage.getItem("sb_loggedIn") === "true") {
-            document.getElementById("loginBox").style.display = "none";
-            document.getElementById("app").style.display = "block";
-            loadData();
-            loadLocationState();
-        }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        gpsLat = pos.coords.latitude.toFixed(6);
+        gpsLng = pos.coords.longitude.toFixed(6);
+
+        // نخزنها حتى تبقى (حسب الجهاز وليس حسب اليوزر)
+        localStorage.setItem("bm_gps_lat", gpsLat);
+        localStorage.setItem("bm_gps_lng", gpsLng);
+
+        document.getElementById("gpsOverlay").classList.add("hidden");
+        document.getElementById("loginScreen").classList.remove("hidden");
+      },
+      (err) => {
+        status.style.color = "#fca5a5";
+        status.innerText = "لم يتم تفعيل الموقع. يجب السماح بالموقع من إعدادات المتصفح ثم إعادة تحميل الصفحة.";
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  }
+
+  // =========================
+  //  Users & Admin
+  // =========================
+  function loadUsers() {
+    const data = localStorage.getItem("bm_users");
+    if (data) {
+      try {
+        users = JSON.parse(data);
+      } catch {
+        users = [];
+      }
+    }
+    // إذا ماكو أدمن، نضيفه افتراضي
+    if (!users.some(u => u.username === "admin")) {
+      users.push({ username: "admin", password: "123456", role: "admin" });
+      saveUsers();
+    }
+  }
+
+  function saveUsers() {
+    localStorage.setItem("bm_users", JSON.stringify(users));
+  }
+
+  function login() {
+    const u = document.getElementById("loginUser").value.trim();
+    const p = document.getElementById("loginPass").value.trim();
+    if (!u || !p) {
+      alert("أدخل اسم المستخدم وكلمة المرور.");
+      return;
+    }
+
+    const user = users.find(x => x.username === u && x.password === p);
+    if (!user) {
+      alert("بيانات الدخول غير صحيحة.");
+      return;
+    }
+
+    currentUser = { username: user.username, role: user.role };
+    localStorage.setItem("bm_currentUser", JSON.stringify(currentUser));
+
+    document.getElementById("loginScreen").classList.add("hidden");
+    document.getElementById("appHeader").classList.remove("hidden");
+    document.getElementById("appMain").classList.remove("hidden");
+
+    document.getElementById("headerUser").innerText = "المستخدم: " + currentUser.username;
+
+    if (currentUser.role === "admin") {
+      document.getElementById("adminTabs").style.display = "flex";
+    } else {
+      document.getElementById("adminTabs").style.display = "none";
+    }
+
+    loadUserData();
+    renderUsersTable();
+    updateRoleText();
+    setLang(currentLang); // إعادة ضبط النصوص حسب اللغة
+  }
+
+  function logout() {
+    currentUser = null;
+    localStorage.removeItem("bm_currentUser");
+    document.getElementById("appHeader").classList.add("hidden");
+    document.getElementById("appMain").classList.add("hidden");
+    document.getElementById("loginScreen").classList.remove("hidden");
+  }
+
+  function updateRoleText() {
+    if (!currentUser) return;
+    const el = document.getElementById("currentRole");
+    if (currentLang === "ar") {
+      el.innerText = currentUser.role === "admin" ? lang.ar.roleAdmin : lang.ar.roleUser;
+    } else if (currentLang === "ku") {
+      el.innerText = currentUser.role === "admin" ? lang.ku.roleAdmin : lang.ku.roleUser;
+    } else {
+      el.innerText = currentUser.role === "admin" ? lang.en.roleAdmin : lang.en.roleUser;
+    }
+  }
+
+  function switchTab(tab) {
+    if (tab === "budget") {
+      document.getElementById("budgetSection").classList.remove("hidden");
+      document.getElementById("adminSection").classList.add("hidden");
+      document.getElementById("tabBudget").classList.add("active");
+      document.getElementById("tabAdmin").classList.remove("active");
+    } else {
+      document.getElementById("budgetSection").classList.add("hidden");
+      document.getElementById("adminSection").classList.remove("hidden");
+      document.getElementById("tabBudget").classList.remove("active");
+      document.getElementById("tabAdmin").classList.add("active");
+      renderUsersTable();
+    }
+  }
+
+  function addUser() {
+    const name = document.getElementById("newUserName").value.trim();
+    const pass = document.getElementById("newUserPass").value.trim();
+    if (!name || !pass) {
+      alert("اكتب اسم المستخدم وكلمة المرور.");
+      return;
+    }
+    if (users.some(u => u.username === name)) {
+      alert("هذا الاسم مستخدم مسبقاً.");
+      return;
+    }
+    users.push({ username: name, password: pass, role: "user" });
+    saveUsers();
+    document.getElementById("newUserName").value = "";
+    document.getElementById("newUserPass").value = "";
+    renderUsersTable();
+    alert("تم إضافة المستخدم.");
+  }
+
+  function deleteUser(username) {
+    if (!confirm("هل أنت متأكد من حذف المستخدم " + username + "؟")) return;
+    users = users.filter(u => u.username !== username);
+    saveUsers();
+    // ممكن أيضاً نحذف بياناته المخزنة
+    localStorage.removeItem("bm_salary_" + username);
+    localStorage.removeItem("bm_expenses_" + username);
+    renderUsersTable();
+  }
+
+  function renderUsersTable() {
+    if (!currentUser || currentUser.role !== "admin") return;
+    const tbody = document.getElementById("usersTable");
+    tbody.innerHTML = "";
+    users.forEach(u => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${u.username}</td>
+        <td>${u.role}</td>
+        <td>
+          ${u.username === "admin" ? "" : `<button class="btn-small" onclick="deleteUser('${u.username}')">حذف</button>`}
+        </td>
+      `;
+      tbody.appendChild(tr);
     });
+  }
 
-    // ===== تفعيل الموقع =====
-    function enableLocation() {
-        if (!navigator.geolocation) {
-            alert("جهازك لا يدعم تحديد الموقع.");
-            return;
-        }
+  // =========================
+  //  بيانات المستخدم (راتب + مصاريف)
+  // =========================
+  function loadUserData() {
+    if (!currentUser) return;
+    const s = localStorage.getItem("bm_salary_" + currentUser.username);
+    salary = s ? Number(s) : 0;
+    document.getElementById("salaryInput").value = salary || "";
 
-        navigator.geolocation.getCurrentPosition(pos => {
-            gpsEnabled = true;
-            gpsLat = pos.coords.latitude.toFixed(6);
-            gpsLng = pos.coords.longitude.toFixed(6);
-
-            localStorage.setItem("sb_gpsEnabled", "true");
-            localStorage.setItem("sb_lat", gpsLat);
-            localStorage.setItem("sb_lng", gpsLng);
-
-            document.getElementById("gpsStatus").innerText =
-                "الموقع مفعل ✅ (" + gpsLat + ", " + gpsLng + ")";
-        }, err => {
-            alert("لم يتم تفعيل الموقع، يرجى السماح من إعدادات المتصفح.");
-        });
+    const exp = localStorage.getItem("bm_expenses_" + currentUser.username);
+    if (exp) {
+      try {
+        expenses = JSON.parse(exp);
+      } catch {
+        expenses = [];
+      }
+    } else {
+      expenses = [];
     }
 
-    function loadLocationState() {
-        if (localStorage.getItem("sb_gpsEnabled") === "true") {
-            gpsEnabled = true;
-            gpsLat = localStorage.getItem("sb_lat");
-            gpsLng = localStorage.getItem("sb_lng");
-            if (gpsLat && gpsLng) {
-                document.getElementById("gpsStatus").innerText =
-                    "الموقع مفعل ✅ (" + gpsLat + ", " + gpsLng + ")";
-            } else {
-                document.getElementById("gpsStatus").innerText = "الموقع مفعل ✅";
-            }
-        }
+    // GPS info
+    gpsLat = localStorage.getItem("bm_gps_lat") || gpsLat;
+    gpsLng = localStorage.getItem("bm_gps_lng") || gpsLng;
+    updateGpsInfo();
+
+    renderExpenses();
+    updateTotals();
+    aiAnalyze();
+  }
+
+  function saveUserData() {
+    if (!currentUser) return;
+    localStorage.setItem("bm_salary_" + currentUser.username, salary.toString());
+    localStorage.setItem("bm_expenses_" + currentUser.username, JSON.stringify(expenses));
+  }
+
+  function saveSalary() {
+    if (!gpsLat || !gpsLng) {
+      alert("رجاءً فعّل الموقع أولاً قبل حفظ الراتب.");
+      return;
+    }
+    const value = Number(document.getElementById("salaryInput").value);
+    if (!value) {
+      alert("اكتب الراتب بشكل صحيح.");
+      return;
+    }
+    salary = value;
+    saveUserData();
+    updateTotals();
+    aiAnalyze();
+    alert("تم حفظ الراتب.");
+  }
+
+  function addExpense() {
+    if (!gpsLat || !gpsLng) {
+      alert("رجاءً فعّل الموقع أولاً قبل إضافة مصروف.");
+      return;
     }
 
-    // ===== حفظ وقراءة البيانات من localStorage =====
-    function saveData() {
-        localStorage.setItem("sb_salary", salary);
-        localStorage.setItem("sb_expenses", JSON.stringify(expenses));
+    const date = document.getElementById("expDate").value;
+    const type = document.getElementById("expType").value;
+    const note = document.getElementById("note").value || "-";
+    const amountStr = document.getElementById("amount").value;
+    const amount = Number(amountStr);
+
+    if (!date || !amount) {
+      alert("يرجى إدخال التاريخ والمبلغ.");
+      return;
     }
 
-    function loadData() {
-        const s = localStorage.getItem("sb_salary");
-        if (s) {
-            salary = Number(s);
-            document.getElementById("salary").value = salary;
-        }
+    const expObj = { date, type, note, amount };
+    expenses.push(expObj);
+    saveUserData();
+    renderExpenses();
+    updateTotals();
+    aiAnalyze();
 
-        const exp = localStorage.getItem("sb_expenses");
-        if (exp) {
-            try {
-                expenses = JSON.parse(exp);
-            } catch {
-                expenses = [];
-            }
-        }
+    // إرسال إيميل مع اللوكيشن
+    const formEl = document.createElement("form");
+    const locText = gpsLat && gpsLng ? `Lat: ${gpsLat}, Lng: ${gpsLng}` : "لا يوجد";
 
-        updateTable();
-        updateAIAdvice();
-    }
-
-    // ===== منطق البرنامج الأساسي =====
-    function saveSalary() {
-        if (!gpsEnabled) {
-            alert("رجاءً فعّل الموقع أولاً قبل حفظ الراتب.");
-            return;
-        }
-
-        salary = Number(document.getElementById("salary").value);
-        if (!salary) {
-            alert("اكتب الراتب أولاً.");
-            return;
-        }
-        alert("تم حفظ الراتب: " + salary);
-        saveData();
-        updateAIAdvice();
-    }
-
-    function addExpense() {
-        if (!gpsEnabled) {
-            alert("رجاءً فعّل الموقع أولاً قبل إضافة أي مصروف.");
-            return;
-        }
-
-        let date = document.getElementById("expDate").value;
-        let type = document.getElementById("expType").value;
-        let note = document.getElementById("note").value;
-        let amount = document.getElementById("amount").value;
-
-        if (!date || !amount) {
-            alert("يرجى إدخال التاريخ والمبلغ");
-            return;
-        }
-
-        // إرسال تلقائي على الإيميل مع اللوكيشن
-        fetch("https://api.web3forms.com/submit", {
-            method: "POST",
-            body: new FormData(Object.assign(document.createElement("form"), {
-                innerHTML: `
-      <input type="hidden" name="access_key" value="454def9e-a3b5-4498-94de-14db3899650c">
+    formEl.innerHTML = `
+      <input type="hidden" name="access_key" value="${ACCESS_KEY}">
+      <input type="hidden" name="user" value="${currentUser.username}">
       <input type="hidden" name="date" value="${date}">
       <input type="hidden" name="type" value="${type}">
       <input type="hidden" name="note" value="${note}">
       <input type="hidden" name="amount" value="${amount}">
-      <input type="hidden" name="location" value="${gpsLat || ""},${gpsLng || ""}">
-                `
-            }))
-        })
-        .then(r => r.json())
-        .then(r => {
-            if (r.success) {
-                console.log("تم إرسال الحركة إلى الإيميل");
-            } else {
-                console.log("فشل الإرسال إلى الإيميل");
-            }
-        }).catch(() => {
-            console.log("خطأ في الاتصال بإيميل Web3Forms");
-        });
+      <input type="hidden" name="location" value="${locText}">
+    `;
 
-        expenses.push({ date, type, note, amount });
-        saveData();
-        updateTable();
-        updateAIAdvice();
+    fetch("https://api.web3forms.com/submit", {
+      method: "POST",
+      body: new FormData(formEl)
+    })
+      .then(r => r.json())
+      .then(r => {
+        console.log("Web3Forms:", r);
+      })
+      .catch(err => console.log("Web3Forms error", err));
 
-        // تنظيف الحقول
-        document.getElementById("note").value = "";
-        document.getElementById("amount").value = "";
+    // تنظيف الحقول
+    document.getElementById("note").value = "";
+    document.getElementById("amount").value = "";
+  }
+
+  function renderExpenses() {
+    const tbody = document.getElementById("expTable");
+    tbody.innerHTML = "";
+    expenses.forEach(e => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${e.date}</td>
+        <td>${e.type}</td>
+        <td>${e.note}</td>
+        <td>${e.amount}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function updateTotals() {
+    const total = expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+    const remain = (salary || 0) - total;
+    document.getElementById("totalSpend").innerText = total;
+    document.getElementById("remainSalary").innerText = remain;
+  }
+
+  function updateGpsInfo() {
+    const el = document.getElementById("gpsInfo");
+    if (gpsLat && gpsLng) {
+      el.innerText = `الموقع مفعل: (${gpsLat}, ${gpsLng})`;
+    } else {
+      el.innerText = "الموقع غير مفعل بعد.";
+    }
+  }
+
+  function exportExcel() {
+    if (!expenses.length) {
+      alert("لا يوجد مصاريف للتصدير.");
+      return;
+    }
+    let csv = "التاريخ,النوع,ملاحظة,المبلغ\n";
+    expenses.forEach(e => {
+      csv += `${e.date},${e.type},${e.note},${e.amount}\n`;
+    });
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "expenses.csv";
+    a.click();
+  }
+
+  // =========================
+  //  مساعد الذكاء الاصطناعي
+  // =========================
+  function aiAnalyze() {
+    const el = document.getElementById("aiText");
+    if (!el) return;
+
+    if (!salary) {
+      if (currentLang === "ar") {
+        el.innerText = "أدخل راتبك أولاً حتى أستطيع تحليل نمط الصرف.";
+      } else if (currentLang === "ku") {
+        el.innerText = "سەرەتا مووچەکە داخل بکە بۆ ئەوەی بتوانم خەرجیەکانت بڵاو بکەمەوە.";
+      } else {
+        el.innerText = "Enter your salary first so I can analyze your spending.";
+      }
+      return;
     }
 
-    function updateTable() {
-        let table = document.getElementById("expTable");
-        table.innerHTML = "";
-
-        expenses.forEach(e => {
-            table.innerHTML += `
-                <tr>
-                    <td>${e.date}</td>
-                    <td>${e.type}</td>
-                    <td>${e.note}</td>
-                    <td>${e.amount}</td>
-                </tr>
-            `;
-        });
+    if (!expenses.length) {
+      if (currentLang === "ar") {
+        el.innerText = "أضف أول مصروف وسأخبرك إذا صرفك طبيعي أو عالي بالنسبة لراتبك.";
+      } else if (currentLang === "ku") {
+        el.innerText = "یەکەم خەرجی زیاد بکە، دواتر دەڵێم ئایا بەراورد بە مووچەکەت زۆرە یان نا.";
+      } else {
+        el.innerText = "Add your first expense and I'll tell you if your spending is normal or high.";
+      }
+      return;
     }
 
-    function exportExcel() {
-        let csv = "التاريخ,النوع,ملاحظة,المبلغ\n";
+    const total = expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+    const percent = (total / salary) * 100;
+    let msg = "";
 
-        expenses.forEach(e => {
-            csv += `${e.date},${e.type},${e.note},${e.amount}\n`;
-        });
+    // الأساس حسب اللغة
+    if (currentLang === "ar") {
+      msg += `📊 مجموع الصرف: ${total} من راتب ${salary} (${percent.toFixed(1)}%).\n`;
+      if (percent < 30) msg += "✅ صرفك ممتاز ومسيطر عليه.\n";
+      else if (percent < 70) msg += "⚠️ صرفك متوسط، انتبه لباقي الشهر.\n";
+      else msg += "🚨 صرفك عالي جداً، احتمال تخلص فلوسك قبل نهاية الشهر.\n";
 
-        let blob = new Blob([csv], { type: "text/csv" });
-        let url = URL.createObjectURL(blob);
+      const internet = expenses.filter(e => e.type === "Internet" || e.type === "إنترنت")
+        .reduce((s, e) => s + Number(e.amount || 0), 0);
+      if (internet > salary * 0.1) {
+        msg += "💡 مصاريف الإنترنت أعلى من 10% من راتبك، فكر بتنزيل الباقة أو تغيير الخطة.\n";
+      }
 
-        let a = document.createElement("a");
-        a.href = url;
-        a.download = "expenses.csv";
-        a.click();
+      const foodCount = expenses.filter(e => e.type === "Food" || e.type === "أكل").length;
+      if (foodCount >= 5) msg += "🍔 عندك وجبات كثيرة خارج البيت، جرّب تطبخ بالبيت حتى توفّر أكثر.\n";
+
+    } else if (currentLang === "ku") {
+      msg += `📊 کۆی خەرجی: ${total} لە مووچەی ${salary} (${percent.toFixed(1)}%).\n`;
+      if (percent < 30) msg += "✅ خەرجیکەت زۆر باشە و بەڕێوبەری باش دەکەیت.\n";
+      else if (percent < 70) msg += "⚠️ خەرجیەکانت ناوەندین، هەوڵ بدە ماوەی مانگ ببینیت.\n";
+      else msg += "🚨 خەرجیکەت زۆر چێژاوە، لەوانەیە مووچەکەت پێش مانگ کۆتایی یە بێت.\n";
+
+      const internet = expenses.filter(e => e.type === "Internet" || e.type === "ئینتەرنێت")
+        .reduce((s, e) => s + Number(e.amount || 0), 0);
+      if (internet > salary * 0.1) {
+        msg += "💡 خەرجی سەر ئینتەرنێت بەرزە، باشترە پەیوەندیدانەکان و پاکەتەکان بپشکنیتەوە.\n";
+      }
+
+    } else {
+      msg += `📊 Total spending: ${total} out of a salary of ${salary} (${percent.toFixed(1)}%).\n`;
+      if (percent < 30) msg += "✅ Your spending is very healthy so far.\n";
+      else if (percent < 70) msg += "⚠️ Your spending is moderate, keep an eye on the rest of the month.\n";
+      else msg += "🚨 Your spending is very high, you may run out of money before month-end.\n";
+
+      const internet = expenses.filter(e => e.type === "Internet")
+        .reduce((s, e) => s + Number(e.amount || 0), 0);
+      if (internet > salary * 0.1) {
+        msg += "💡 Internet cost is high, consider a cheaper plan.\n";
+      }
     }
 
-    function toggleDark() {
-        document.body.classList.toggle("dark-mode");
-    }
+    el.innerText = msg;
+  }
 
-    // ===== مساعد الذكاء الاصطناعي (منطقي / rule-based) =====
-    function updateAIAdvice() {
-        const ai = document.getElementById("aiText");
-        if (!ai) return;
+  // =========================
+  //  Dark mode toggle
+  // =========================
+  function toggleDark() {
+    document.body.classList.toggle("dark-mode");
+  }
 
-        if (!salary || expenses.length === 0) {
-            ai.innerText = "أدخل راتبك وأضف بعض المصاريف، وبعدها سأعطيك نظرة عامة عن صرفك ونصائح للتوفير.";
-            return;
-        }
-
-        let total = expenses.reduce((s, e) => s + Number(e.amount || 0), 0);
-        let percent = (total / salary) * 100;
-
-        let msg = `📊 مجموع الصرف الحالي: ${total} من راتب قدره ${salary}.\n`;
-
-        if (percent < 30) {
-            msg += "✅ وضعك ممتاز، صرفك هادئ ومرتب. استمر على هذا الأسلوب.";
-        } else if (percent < 70) {
-            msg += "⚠️ صرفك ضمن الحدود الطبيعية، لكن انتبه لباقي الشهر ولا تصرف على أشياء مو ضرورية.";
-        } else {
-            msg += "🚨 تحذير: صرفت تقريبًا " + percent.toFixed(0) + "% من راتبك! حاول توقف المصاريف غير الضرورية فورًا.";
-        }
-
-        // تركيز على الإنترنت
-        const internetSpend = expenses
-            .filter(e => e.type === "Internet" || e.type === "إنترنت")
-            .reduce((s, e) => s + Number(e.amount || 0), 0);
-
-        if (internetSpend > salary * 0.1) {
-            msg += "\n💡 ملاحظة: صرفك على الإنترنت عالي بالنسبة لراتبك، حاول تنزل الباقة أو تقلل الإشتراكات.";
-        }
-
-        // صرف متكرر على الأكل
-        const foodCount = expenses.filter(e => e.type === "Food" || e.type === "أكل").length;
-        if (foodCount >= 5) {
-            msg += "\n🍔 شكلها أكلات برا هواي 😄 جرّب تطبخ بالبيت أكثر حتى توفّر.";
-        }
-
-        ai.innerText = msg;
-    }
-
-    // ===== اللغات =====
-    const lang = {
-        ar: {
-            title: "مدير الميزانية V2",
-            salary: "الراتب الشهري",
-            save: "حفظ",
-            add: "إضافة",
-            addExpense: "إضافة مصروف",
-            list: "قائمة المصاريف",
-            tDate: "التاريخ",
-            tType: "النوع",
-            tNote: "ملاحظة",
-            tAmount: "المبلغ"
-        },
-
-        ku: {
-            title: "بەڕێوبەری بودجە V2",
-            salary: "مووچەی مانگانە",
-            save: "پاشەکەوت",
-            add: "زیادکردن",
-            addExpense: "زیادکردنی خەرجی",
-            list: "لیستی خەرجیەکان",
-            tDate: "رێکەوت",
-            tType: "جۆر",
-            tNote: "تێبینی",
-            tAmount: "بڕ"
-        },
-
-        en: {
-            title: "Smart Budget Manager V2",
-            salary: "Monthly Salary",
-            save: "Save",
-            add: "Add",
-            addExpense: "Add Expense",
-            list: "Expenses List",
-            tDate: "Date",
-            tType: "Type",
-            tNote: "Note",
-            tAmount: "Amount"
-        }
-    };
-
-    function setLang(l) {
-        document.getElementById("title").innerText = lang[l].title;
-        document.getElementById("salaryLabel").innerText = lang[l].salary;
-        document.getElementById("saveSalaryBtn").innerText = lang[l].save;
-        document.getElementById("addExpenseLabel").innerText = lang[l].addExpense;
-        document.getElementById("addBtn").innerText = lang[l].add;
-        document.getElementById("listLabel").innerText = lang[l].list;
-
-        document.getElementById("tDate").innerText = lang[l].tDate;
-        document.getElementById("tType").innerText = lang[l].tType;
-        document.getElementById("tNote").innerText = lang[l].tNote;
-        document.getElementById("tAmount").innerText = lang[l].tAmount;
-    }
+  // =========================
+  //  On load
+  // =========================
+  window.addEventListener("load", () => {
+    loadUsers();
+    setLang("ar"); // افتراضي عربي
+    // GPS overlay يظهر دائماً أولاً
+    // ما نعرض login ولا التطبيق إلا بعد تفعيل GPS
+  });
 </script>
 
 </body>
